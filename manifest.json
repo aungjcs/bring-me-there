@@ -1,0 +1,40 @@
+{
+    "manifest_version": 2,
+    "name": "Bring me there",
+    "description": "Automation for chrome.",
+    "version": "0.0.1",
+    "permissions": [
+    ],
+    "icons": {
+        "16": "img/bmt-16.png",
+        "48": "img/bmt-48.png",
+        "128": "img/bmt-128.png"
+    },
+    "background": {
+        "scripts": [
+            "js/lib/underscore-1.7.0.min.js",
+            "js/background.js"
+        ],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_icon": {
+            "19": "img/bmt-19.png",
+            "38": "img/bmt-38.png"
+        },
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [{
+        "all_frames": false,
+        "js": [
+            "js/contentscript.js"
+        ],
+        "matches": ["<all_urls>"],
+        "match_about_blank": false,
+        "run_at": "document_idle"
+    }],
+    "web_accessible_resources": [
+        "img/*.png",
+        "js/*"
+    ]
+}

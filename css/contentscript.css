@@ -1,0 +1,99 @@
+.hjo-content-projects
+{
+    display: none;
+    position: absolute;
+    padding: 5px;
+    background-color: #ffffc0;
+    border: 1px solid #999;
+    z-index: 100;
+}
+.hjo-content-projects .itemList
+{
+    border: 0px solid #bbb;
+    font-size: 12px;
+}
+.hjo-content-projects .itemList tr.itemRow:hover
+{
+    background-color: #d9d9d9;
+}
+.hjo-content-projects .itemList tr.msg
+{
+    font-weight: bold;
+}
+.hjo-content-projects .itemList td
+{
+    padding: 5px;
+    border: 0px solid #bbb;
+    border-top-width: 1px;
+    min-width: 30px;
+}
+.hjo-content-projects .itemList tr.msg td
+{
+    padding-top: 15px;
+}
+
+.hjo-content-projects .LblDisplayName
+{
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.hjo-content-projects a.projectCd
+{
+    color: #057fa3;
+}
+
+td.autoinput
+{
+    background-color: #f9f9f9;
+    padding: 0 5px;
+    color: #666;
+}
+
+td.autoinput label
+{
+    font-size: 12px;
+}
+td.autoinput div
+{
+    height: 25px;
+}
+td.autoinput div.controller
+{
+    width: 250px;
+}
+td.autoinput div.controller button
+{
+    width: 30%;
+    margin: 0 3px;
+    min-height: 25px;
+}
+td.autoinput div.content {
+    margin-top: 15px;
+}
+td.autoinput div.content .selPatternList {
+    width: 150px;
+} 
+td.autoinput div.content .tbxPatternName{
+    width: 130px;
+}
+td.autoinput div.content .newInputArea {
+    display: none;
+}
+td.autoinput div.content .newInputArea button {
+    margin: 1px;
+}
+td.autoinput div.content.insertting .selPatternList {
+    display: none;
+}
+td.autoinput div.content.insertting .newInputArea {
+    display: inline;
+}
+td.finished {
+    display: none;
+    margin-top: 15px;
+}
+td.finished.end {
+    background-color: #FAB005;
+    display: block;
+}
