@@ -1,87 +1,175 @@
-/* global chrome, jQuery, window, angular, config, common */
-(function( $, undefined ) {
+/* global chrome, async, jQuery, window, angular, config, common */
+var $ = jQuery;
+var manifest = chrome.runtime.getManifest();
 
-    var manifest = chrome.runtime.getManifest();
-    // var VERSION = manifest.version;
+// var VERSION = manifest.version;
+var activeTab, activeHost;
+
+function main() {
 
     $(function() {
 
         console.log( 'bring me there!! i am popup' );
+
+        $( '#btnOpenBg' ).click(function( evt ) {
+
+            var bgUrl = chrome.extension.getURL( 'bg.html' );
+
+            evt.preventDefault();
+
+            chrome.tabs.query({
+                url: bgUrl
+            }, function( tabs ) {
+
+                if ( tabs.length ) {
+
+                    chrome.tabs.update( tabs[0].id, { active: true });
+                    return;
+                }
+
+                chrome.tabs.create({ url: bgUrl });
+
+            });
+        });
+
+        $( '#btnSetClearHash' ).click(function() {
+
+            async.waterfall([
+                function() {
+
+                    // load setting from storage
+                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
+                },
+                function( storage ) {
+
+                    var setting = storage.setting;
+                    var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
+
+                    hosts = hosts.filter(function( v ) {
+
+                        return v !== activeHost;
+                    });
+
+                    hosts.push( activeHost );
+
+                    chrome.storage.local.set({
+                        setting: {
+                            clearHashHost: hosts
+                        }
+                    }, cbFactory( arguments ));
+                },
+                function() {
+                    initView();
+                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
+                },
+                function( setting ) {
+
+                    console.log( 'setting', setting );
+                }
+            ]);
+        });
+
+        $( '#btnStopClearHash' ).click(function() {
+
+            async.waterfall([
+                function() {
+
+                    // load setting from storage
+                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
+                },
+                function( storage ) {
+
+                    var setting = storage.setting;
+                    var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
+
+                    hosts = hosts.filter(function( v ) {
+
+                        return v !== activeHost;
+                    });
+
+                    chrome.storage.local.set({
+                        setting: {
+                            clearHashHost: hosts
+                        }
+                    }, cbFactory( arguments ));
+                },
+                function() {
+
+                    initView();
+                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
+                },
+                function( setting ) {
+
+                    console.log( 'setting', setting );
+                }
+            ]);
+        });
     });
+}
 
-    // angular.module( 'dighubApp', [])
-    //     .controller( 'PopupController', ['$scope',
-    //         function( $scope ) {
+// cache active tab
+chrome.tabs.query({
+    active: true
+}, function( tabs ) {
 
-    //             $scope.login = function() {
+    if ( !tabs.length ) {
 
-    //                 var url, state, cbUrl;
+        return;
+    }
 
-    //                 if ( auth && auth.access_token ) {
+    activeTab = tabs.length ? tabs[0] : null;
+    activeHost = activeTab.url.match( /https?:\/\/[^/]+/ig )[0];
 
-    //                     common.redirect({
+    initView();
+    main();
+});
 
-    //                         url: chrome.extension.getURL( 'main.html' )
-    //                     });
+function initView() {
 
-    //                     return;
-    //                 }
+    // body...
+    async.waterfall([
+        function() {
 
-    //                 url = 'https://github.com/login/oauth/authorize';
-    //                 state = '_' + new Date().getTime() + '_';
-    //                 cbUrl = chrome.extension.getURL( 'callback.html' );
+            // load setting from storage
+            chrome.storage.local.get(['setting'], cbFactory( arguments ));
+        },
+        function( storage ) {
 
-    //                 url = url + '?' + [
-    //                     'client_id=' + config.auth.github.clientId,
-    //                     'redirect_uri=' + encodeURIComponent( config.auth.github.redirectUri ),
-    //                     'scope=' + config.auth.github.scope,
-    //                     'state=' + state
-    //                 ].join( '&' );
+            var found;
+            var setting = storage.setting;
+            var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
 
-    //                 // clear old window
-    //                 chrome.tabs.query({
-    //                     url: chrome.extension.getURL( 'main.html' ) + '*'
-    //                 }, function( tabs ) {
+            found = hosts.find(function( v ) {
 
-    //                     var removeIds = [];
+                return v === activeHost;
+            });
 
-    //                     if ( tabs.length ) {
+            console.log( 'setting', setting, found );
 
-    //                         tabs.forEach(function( tab ) {
+            $( '#btnSetClearHash, #btnStopClearHash' ).addClass('hidden');
 
-    //                             removeIds.push( tab.id );
-    //                         });
-    //                     }
+            if ( !found ) {
 
-    //                     chrome.tabs.remove( removeIds );
-    //                 });
+                // set button on
+                $( '#btnSetClearHash' ).removeClass( 'hidden' );
+            } else {
 
-    //                 chrome.tabs.create({
-    //                     url: url
-    //                 });
-    //             };
-    //         }
-    //     ]);
+                $( '#btnStopClearHash' ).removeClass( 'hidden' );
+            }
+        }
+    ]);
+}
 
-    // angular.element( document ).ready(function() {
+function cbFactory( args ) {
 
-    //     chrome.storage.local.get({
-    //         auth: null
-    //     }, function( result ) {
+    var next = args[args.length - 1] || function() {};
 
-    //         auth = result.auth;
-    //         angular.bootstrap( document, ['dighubApp']);
+    return function( res ) {
 
-    //         $( 'a.auto-ref' ).click(function( evt ) {
+        var args = [].slice.call( arguments );
 
-    //             evt.preventDefault();
+        args.unshift( null );
 
-    //             chrome.tabs.create({
-    //                 url: this.href
-    //             });
-    //         });
-    //     });
-
-    // });
-
-})( jQuery );
+        next.apply( null, args );
+    };
+}

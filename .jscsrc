@@ -1,0 +1,17 @@
+{
+    "preset": "wordpress",
+    "excludeFiles": ["node_modules/**", "dist/**"],
+    "requireCapitalizedComments": null,
+    "requireCamelCaseOrUpperCaseIdentifiers": null,
+    "requireDotNotation": null,
+    "requirePaddingNewlinesInBlocks": {"open": true, "close": false},
+    "requireSpaceAfterPrefixUnaryOperators": null,
+    "requireSpacesInsideParentheses": {
+      "all": false,
+      "except": [ "(", ")", "{", "}", "[", "]", "function" ]
+    },
+    "requireYodaConditions": null,
+    "requireVarDeclFirst": null,
+    "validateLineBreaks": null,
+    "validateQuoteMarks": "'"
+}

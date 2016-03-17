@@ -1,0 +1,40 @@
+{
+    "bitwise": true,
+    "browser": true,
+    "curly": true,
+    //chaiの下記のようなコマンドが許されない
+    //expect(newRow.toJSON()).ok;
+    //詳細 -> http://niwaringo.tumblr.com/post/73206657360/chai-expect-jshint
+    "expr" : true,
+    "freeze": true,
+    "globals": {
+        "after": true,
+        "afterEach": true,
+        "angular": true,
+        "before": true,
+        "beforeEach": true,
+        "chrome": true,
+        "console": true,
+        "describe": true,
+        "xdescribe": true,
+        "expect": true,
+        "it": true,
+        "xit": true,
+        "module": true,
+        "moment": true,
+        "require": true,
+        "window": true
+    },
+    "latedef": false,
+    "loopfunc": true,
+    "newcap": false,
+    "noarg": true,
+    "node": true,
+    "noempty": false,
+    "quotmark": "single",
+    "undef": true,
+    "unused": false,
+    "strict": false,
+    "sub": true,
+    "trailing": true
+}
