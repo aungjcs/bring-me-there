@@ -1,4 +1,4 @@
-/* global chrome, async, jQuery, window, angular, config, common */
+/* global chrome, async, jQuery, window, angular, config, Promise, common */
 var $ = jQuery;
 var manifest = chrome.runtime.getManifest();
 
@@ -7,146 +7,90 @@ var activeTab, activeHost;
 
 function main() {
 
-    $(function() {
+    console.log( 'bring me there!! i am popup' );
 
-        console.log( 'bring me there!! i am popup' );
+    $( '#btnOpenBg' ).click(function( evt ) {
 
-        $( '#btnOpenBg' ).click(function( evt ) {
+        var bgUrl = chrome.extension.getURL( 'bg.html' );
 
-            var bgUrl = chrome.extension.getURL( 'bg.html' );
+        evt.preventDefault();
 
-            evt.preventDefault();
+        // search background page by url
+        // if exists we will make it active
+        // if not open in new tab
+        chrome.tabs.queryAsync({
+            url: bgUrl
+        }).then(function( tabs ) {
 
-            chrome.tabs.query({
-                url: bgUrl
-            }, function( tabs ) {
+            if ( tabs.length ) {
 
-                if ( tabs.length ) {
+                chrome.tabs.update( tabs[0].id, { active: true });
+                return;
+            }
 
-                    chrome.tabs.update( tabs[0].id, { active: true });
-                    return;
-                }
+            chrome.tabs.create({ url: bgUrl });
+        });
+    });
 
-                chrome.tabs.create({ url: bgUrl });
+    $( '#btnSetClearHash' ).click(function() {
 
-            });
+        updateHostClearHash({ add: true }).then( initView );
+    });
+
+    $( '#btnStopClearHash' ).click(function() {
+
+        updateHostClearHash({ clear: true }).then( initView );
+    });
+}
+
+function updateHostClearHash( option ) {
+
+    option = option || {};
+
+    if ( !activeHost ) {
+
+        return Promise.reject( 'Your are opening not https? page. Maybe chrome-extension ?' );
+    }
+
+    return chrome.storage.local.getAsync(['setting']).then(function( storage ) {
+
+        var setting = storage.setting;
+        var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
+
+        hosts = hosts.filter(function( v ) {
+
+            return v !== activeHost;
         });
 
-        $( '#btnSetClearHash' ).click(function() {
+        if ( option.add === true ) {
 
-            async.waterfall([
-                function() {
+            hosts.push( activeHost );
+        }
 
-                    // load setting from storage
-                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
-                },
-                function( storage ) {
-
-                    var setting = storage.setting;
-                    var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
-
-                    hosts = hosts.filter(function( v ) {
-
-                        return v !== activeHost;
-                    });
-
-                    hosts.push( activeHost );
-
-                    chrome.storage.local.set({
-                        setting: {
-                            clearHashHost: hosts
-                        }
-                    }, cbFactory( arguments ));
-                },
-                function() {
-                    initView();
-                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
-                },
-                function( setting ) {
-
-                    console.log( 'setting', setting );
-                }
-            ]);
-        });
-
-        $( '#btnStopClearHash' ).click(function() {
-
-            async.waterfall([
-                function() {
-
-                    // load setting from storage
-                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
-                },
-                function( storage ) {
-
-                    var setting = storage.setting;
-                    var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
-
-                    hosts = hosts.filter(function( v ) {
-
-                        return v !== activeHost;
-                    });
-
-                    chrome.storage.local.set({
-                        setting: {
-                            clearHashHost: hosts
-                        }
-                    }, cbFactory( arguments ));
-                },
-                function() {
-
-                    initView();
-                    chrome.storage.local.get(['setting'], cbFactory( arguments ));
-                },
-                function( setting ) {
-
-                    console.log( 'setting', setting );
-                }
-            ]);
+        return chrome.storage.local.setAsync({
+            setting: {
+                clearHashHost: hosts
+            }
         });
     });
 }
 
-// cache active tab
-chrome.tabs.query({
-    active: true
-}, function( tabs ) {
-
-    if ( !tabs.length ) {
-
-        return;
-    }
-
-    activeTab = tabs.length ? tabs[0] : null;
-    activeHost = activeTab.url.match( /https?:\/\/[^/]+/ig )[0];
-
-    initView();
-    main();
-});
-
 function initView() {
 
-    // body...
-    async.waterfall([
-        function() {
+    chrome.storage.local.getAsync(['setting']).then(function( storage ) {
 
-            // load setting from storage
-            chrome.storage.local.get(['setting'], cbFactory( arguments ));
-        },
-        function( storage ) {
+        var found;
+        var setting = storage.setting;
+        var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
 
-            var found;
-            var setting = storage.setting;
-            var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
+        found = hosts.find(function( v ) {
 
-            found = hosts.find(function( v ) {
+            return v === activeHost;
+        });
 
-                return v === activeHost;
-            });
+        $( '#btnSetClearHash, #btnStopClearHash' ).addClass( 'hidden' );
 
-            console.log( 'setting', setting, found );
-
-            $( '#btnSetClearHash, #btnStopClearHash' ).addClass('hidden');
+        if ( activeHost ) {
 
             if ( !found ) {
 
@@ -157,19 +101,21 @@ function initView() {
                 $( '#btnStopClearHash' ).removeClass( 'hidden' );
             }
         }
-    ]);
+    });
 }
 
-function cbFactory( args ) {
+// cache active tab
+chrome.tabs.queryAsync({ active: true }).then(function( tabs ) {
 
-    var next = args[args.length - 1] || function() {};
+    if ( !tabs.length ) {
 
-    return function( res ) {
+        return;
+    }
 
-        var args = [].slice.call( arguments );
+    activeTab = tabs.length ? tabs[0] : null;
+    activeHost = activeTab.url.match( /https?:\/\/[^/]+/ig );
+    activeHost = activeHost ? activeHost[0] : null;
 
-        args.unshift( null );
-
-        next.apply( null, args );
-    };
-}
+    initView();
+    main();
+});
