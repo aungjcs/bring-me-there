@@ -32,6 +32,20 @@ function main() {
         });
     });
 
+    // open options page
+    $( '#btnOpenOption' ).click(function( evt ) {
+
+        if ( chrome.runtime.openOptionsPage ) {
+
+            // New way to open options pages, if supported (Chrome 42+).
+            // chrome.runtime.openOptionsPage();
+        } else {
+
+            // Reasonable fallback.
+        }
+        window.open( chrome.runtime.getURL( 'options.html' ));
+    });
+
     $( '#btnSetClearHash' ).click(function() {
 
         updateHostClearHash({ add: true }).then( initView );
@@ -54,7 +68,7 @@ function updateHostClearHash( option ) {
 
     return chrome.storage.local.getAsync(['setting']).then(function( storage ) {
 
-        var setting = storage.setting;
+        var setting = storage.setting || {};
         var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [];
 
         hosts = hosts.filter(function( v ) {

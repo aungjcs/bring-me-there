@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html ng-app="extApp">
+
+<head>
+    <title>Bring me there options</title>
+    <link href="css/lib/normalize.css" rel="stylesheet">
+    <link href="css/lib/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script src="js/lib/bluebird.js"></script>
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/angular-strap.min.js"></script>
+    <script src="js/lib/angular-strap.tpl.min.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+    body: {
+        padding: 10px;
+    }
+    </style>
+</head>
+
+<body ng-controller="BodyCtrl">
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img alt="Brand" src="img/bmt-38.png">
+                </a>
+                
+                <p class="navbar-text"><b>Bring me there</b></p>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        Clear hash hosts:
+        <div ng-repeat="h in view.clearHashHost track by $index">{{$index}}:{{h}}</div>
+        <div class="form-horizontal">
+
+            <div class="form-group">
+                <div class="col-md-12">
+                    <button class="btn btn-primary" ng-click="addTask()">Add task</button>
+                    <button class="btn btn-danger" ng-click="clearTasks()">Clear task</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-striped">
+            <tr>
+                <th>#</th>
+                <th>Selector</th>
+                <th>type</th>
+                <th>memo</th>
+                <th></th>
+            </tr>
+            <tr ng-repeat="t in view.tasks track by t.id">
+                <td>{{t.id}}</td>
+                <td><b>{{t.selector}}</b></td>
+                <td>
+                    <select ng-options="type for type in view.types" ng-model="t.type" ng-change="typeChanged(t)"></select>
+                </td>
+                <td></td>
+                <td>
+                    <button class="btn btn-danger btn-xs" ng-click="removeTask(t)">
+                        <i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script src="js/options.js"></script>
+</body>
+
+</html>
