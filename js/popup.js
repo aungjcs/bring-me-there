@@ -80,7 +80,7 @@ function initView() {
     chrome.storage.local.getAsync(['setting']).then(function( storage ) {
 
         var found;
-        var setting = storage.setting;
+        var setting = storage.setting || {};
         var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
 
         found = hosts.find(function( v ) {
