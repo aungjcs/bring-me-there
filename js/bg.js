@@ -1,6 +1,108 @@
 /*global common */
 
 var clearHashHosts = [];
+var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
+var app = angular.module( 'extApp', []);
+var jobs = [];
+
+handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
+app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
+
+    $scope.jobs = jobs;
+
+    $scope.$on( 'jobs:changed', function( event, details ) {
+
+        // console.log( 'details', details );
+
+        $scope.$applyAsync();
+    });
+}]);
+
+app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
+
+    // web request
+    chrome.webRequest.onBeforeRequest.addListener(function( details ) {
+
+        updateJobs({ id: details.requestId, state: 'before', type: 'wreq' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>'],
+        types: handleRequestTypes
+    });
+
+    chrome.webRequest.onCompleted.addListener(function( details ) {
+
+        updateJobs({ id: details.requestId, state: 'complete', type: 'wreq' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>'],
+        types: handleRequestTypes
+    });
+
+    chrome.webRequest.onErrorOccurred.addListener(function( details ) {
+
+        updateJobs({ id: details.requestId, state: 'error', type: 'wreq' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>'],
+        types: handleRequestTypes
+    });
+
+    // web navigation
+    chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
+
+        updateJobs({ id: details.processId, state: 'before', type: 'navi' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>']
+    });
+
+    chrome.webNavigation.onCompleted.addListener(function( details ) {
+
+        updateJobs({ id: details.processId, state: 'complete', type: 'navi' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>']
+    });
+
+    chrome.webNavigation.onErrorOccurred.addListener(function( details ) {
+
+        updateJobs({ id: details.processId, state: 'error', type: 'navi' }, details );
+        $rootScope.$broadcast( 'jobs:changed', details );
+    }, {
+        urls: ['<all_urls>']
+    });
+
+    function updateJobs( options, details ) {
+
+        var key, id, job;
+
+        id = options.id;
+        key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
+
+        if ( options.state === 'before' ) {
+
+            jobs.unshift({
+                key: key,
+                id: id,
+                state: options.state,
+                type: options.type,
+                details: details
+            });
+        } else {
+
+            job = jobs.find(function( v ) {
+
+                return v.key === key;
+            });
+
+            if ( job ) {
+
+                job.state = options.state;
+            }
+        }
+    }
+}]);
 
 chrome.storage.local.get( 'setting', function( storage ) {
 
@@ -99,7 +201,10 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
             if ( url.indexOf( u ) >= 0 ) {
 
-                messageToActiveTab( details );
+                messageToActiveTab({
+                    type: 'webRequest',
+                    data: details
+                });
 
                 if ( !redirect ) {
 
@@ -137,20 +242,53 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 //     types: ['main_frame']
 // }, ['blocking']);
 
-chrome.webRequest.onCompleted.addListener(function( details ) {
+chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
-    // console.log( 'onCompleted', details );
-    // messageToActiveTab( details );
+    console.log( 'wr onBeforeRequest', details.requestId, details.tabId, details.frameId );
+
+    // messageToActiveTab({
+    //     type: 'webRequest',
+    //     data: details
+    // });
 
     return { cancel: false };
 }, {
     urls: ['<all_urls>'],
-    types: ['main_frame']
+    types: handleRequestTypes
+});
+
+chrome.webRequest.onCompleted.addListener(function( details ) {
+
+    console.log( 'wr onCompleted', details.requestId, details.tabId, details.frameId );
+
+    // messageToActiveTab({
+    //     type: 'webRequest',
+    //     data: details
+    // });
+
+    return { cancel: false };
+}, {
+    urls: ['<all_urls>'],
+    types: handleRequestTypes
+});
+
+chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
+
+    console.log( 'navi onBeforeNavigate', details.processId, details.tabId, details.frameId );
+}, {
+    urls: ['<all_urls>']
+});
+
+chrome.webNavigation.onCompleted.addListener(function( details ) {
+
+    console.log( 'navi onCompleted', details.processId, details.tabId, details.frameId );
+}, {
+    urls: ['<all_urls>']
 });
 
 chrome.runtime.onInstalled.addListener(function( details ) {
 
-    messageToActiveTab( details );
+    // messageToActiveTab( details );
 });
 
 function messageToActiveTab( msg ) {
@@ -159,7 +297,10 @@ function messageToActiveTab( msg ) {
         pinned: true
     }, function( tabs ) {
 
-        chrome.tabs.sendMessage( tabs[0].id, msg );
+        chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
+
+            console.log( 'res from cs', res );
+        });
     });
 }
 

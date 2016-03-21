@@ -1,0 +1,14 @@
+
+#tbl-tasks tbody td .cell-icon{
+    visibility: hidden;
+    float: right;
+    cursor: pointer;
+}
+
+#tbl-tasks tbody td:hover .cell-icon{
+    visibility: visible;
+}
+
+#tbl-tasks tbody td .wait {
+    max-width: 100px;
+}

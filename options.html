@@ -5,6 +5,7 @@
     <title>Bring me there options</title>
     <link href="css/lib/normalize.css" rel="stylesheet">
     <link href="css/lib/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
@@ -42,19 +43,27 @@
                 </div>
             </div>
         </div>
-        <table class="table table-striped">
+        <table id="tbl-tasks" class="table table-striped">
             <tr>
                 <th>#</th>
                 <th>Selector</th>
-                <th>type</th>
-                <th>memo</th>
+                <th>Type</th>
+                <th>Wait(ms)</th>
+                <th>Memo</th>
                 <th></th>
             </tr>
-            <tr ng-repeat="t in view.tasks track by t.id">
+            <tr ng-repeat="t in view.tasks track by t.id" ng-init="selectorEdit=false">
                 <td>{{t.id}}</td>
-                <td><b>{{t.selector}}</b></td>
                 <td>
-                    <select ng-options="type for type in view.types" ng-model="t.type" ng-change="typeChanged(t)"></select>
+                    <label class="form-control-static" ng-show="!selectorEdit">{{t.selector}}</label>
+                    <i class="glyphicon glyphicon-pencil cell-icon" ng-click="selectorEdit=true;setFocus($event)" ng-show="!selectorEdit"></i>
+                    <input type="text" class="form-control" ng-model="t.selector" ng-show="selectorEdit" ng-blur="selectorEdit=false;taskChanged(t);">
+                </td>
+                <td>
+                    <select class="form-control" ng-options="type for type in view.types" ng-model="t.type" ng-change="taskChanged(t)"></select>
+                </td>
+                <td>
+                    <input type="number" class="wait form-control" ng-model="t.wait" ng-blur="taskChanged(t);">
                 </td>
                 <td></td>
                 <td>

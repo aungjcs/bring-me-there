@@ -1,9 +1,30 @@
-<html>
-    <head>
-        <title>Bring me there background page.</title>
-    </head>
-    <body>
-        <h1>Bring me there background page.</h1>
-        <script src="js/bg.js"></script>
-    </body>
+<html ng-app="extApp">
+
+<head>
+    <link href="css/lib/normalize.css" rel="stylesheet">
+    <link href="css/lib/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
+    <title>Bring me there background page.</title>
+    <script src="js/lib/angular.min.js"></script>
+</head>
+
+<body ng-controller="BodyCtrl">
+    <div class="container">
+        
+    <h1>Bring me there background page.</h1> jobs: {{jobs.length}}
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="pull-left">
+                <li><label>navi:{{navis.length}}</label></li>
+                <li ng-repeat="job in jobs | filter:'navi' as navis">{{job.key}} {{job.state}} {{job.details.type}}</li>
+            </ul>
+            <ul class="pull-left">
+                <li><label>wreq:{{wreqs.length}}</label></li>
+                <li ng-repeat="job in jobs | filter:'wreq' as wreqs">{{job.key}} {{job.state}} {{job.details.type}}</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+    <script src="js/bg.js"></script>
+</body>
+
 </html>

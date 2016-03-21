@@ -11,7 +11,7 @@ var Common = {};
         chrome.tabs
     ].forEach(function( api ) {
 
-        Promise.promisifyAll( api, { promisifier: ChromeExtPromisifier });
+        api && Promise.promisifyAll( api, { promisifier: ChromeExtPromisifier });
     });
 
     Common.l = function( logName ) {

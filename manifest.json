@@ -7,6 +7,7 @@
         "tabs",
         "management",
         "storage",
+        "webNavigation",
         "webRequest",
         "webRequestBlocking",
         "<all_urls>"
@@ -33,6 +34,9 @@
     "content_scripts": [{
         "all_frames": false,
         "js": [
+            "js/lib/jquery.min.js",
+            "js/lib/bluebird.js",
+            "js/common.js",
             "js/contentscript.js"
         ],
         "matches": ["<all_urls>"],
