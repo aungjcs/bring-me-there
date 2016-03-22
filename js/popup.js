@@ -55,6 +55,15 @@ function main() {
 
         updateHostClearHash({ clear: true }).then( initView );
     });
+
+    $( '#btnRunTasks' ).click(function() {
+
+        chrome.runtime.sendMessageAsync({
+            type: 'run-task'
+        }).then(function () {
+            
+        });
+    });
 }
 
 function updateHostClearHash( option ) {

@@ -6,6 +6,7 @@ var Common = {};
 
     [
         chrome.browserAction,
+        chrome.runtime,
         chrome.storage.local,
         chrome.storage.sync,
         chrome.tabs
