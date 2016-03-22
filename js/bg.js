@@ -4,6 +4,7 @@ var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var app = angular.module( 'extApp', []);
 var jobs = [];
+var isListening = false;
 
 handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
@@ -16,6 +17,11 @@ app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector 
 
         $scope.$applyAsync();
     });
+
+    $scope.setListen = function() {
+
+        isListening = $scope.listen;
+    };
 }]);
 
 app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
@@ -77,6 +83,11 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 
         var key, id, job;
 
+        if ( !isListening ) {
+
+            return;
+        }
+
         id = options.id;
         key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
 
@@ -125,6 +136,21 @@ function sendMsg( msg ) {
 }
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
+
+    if ( request.type === 'run-task' ) {
+
+        chrome.tabs.queryAsync({
+            active: true,
+            currentWindow: true
+        }).then(function( tabs ) {
+
+            return chrome.storage.local.getAsync(['setting', 'tasks']).then(function( storage ) {
+
+                console.log( 'storage', storage );
+                return storage;
+            });
+        });
+    }
 
     if ( request.type === 'updateWindow' && request.evtData ) {
 
