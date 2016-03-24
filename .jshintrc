@@ -6,6 +6,7 @@
     //expect(newRow.toJSON()).ok;
     //詳細 -> http://niwaringo.tumblr.com/post/73206657360/chai-expect-jshint
     "expr" : true,
+    "eqnull" : true,
     "freeze": true,
     "globals": {
         "after": true,
