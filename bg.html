@@ -22,11 +22,11 @@
         <div class="col-md-12">
             <ul class="pull-left">
                 <li><label>navi:{{navis.length}}</label></li>
-                <li ng-repeat="job in jobs | filter:'navi' as navis">{{job.key}} {{job.state}} {{job.details.type}}</li>
+                <li ng-repeat="job in jobs | filter:'navi' as navis" ng-hide="job.state==='complete'">{{job.key}} {{job.state}} {{job.details.type}}</li>
             </ul>
             <ul class="pull-left">
                 <li><label>wreq:{{wreqs.length}}</label></li>
-                <li ng-repeat="job in jobs | filter:'wreq' as wreqs">{{job.key}} {{job.state}} {{job.details.type}}</li>
+                <li ng-repeat="job in jobs | filter:'wreq' as wreqs" ng-hide="job.state==='complete'">{{job.key}} {{job.state}} {{job.details.type}}</li>
             </ul>
         </div>
     </div>

@@ -1,5 +1,6 @@
 /*global common */
 
+var REQUEST_TIMEOUT = 10 * 1000;
 var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var app = angular.module( 'extApp', []);
@@ -81,7 +82,7 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 
     function updateJobs( options, details ) {
 
-        var key, id, job;
+        var key, id, job, timer;
 
         if ( !isListening ) {
 
@@ -93,12 +94,18 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 
         if ( options.state === 'before' ) {
 
+            timer = setTimeout(function() {
+
+                timeout( key );
+            }, REQUEST_TIMEOUT );
+
             jobs.unshift({
                 key: key,
                 id: id,
                 state: options.state,
                 type: options.type,
-                details: details
+                details: details,
+                timer: timer
             });
         } else {
 
@@ -110,7 +117,25 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
             if ( job ) {
 
                 job.state = options.state;
+
+                job.timer && clearTimeout( job.timer );
             }
+        }
+    }
+
+    function timeout( key ) {
+
+        var job = jobs.find(function( v ) {
+
+            return v.key === key;
+        });
+
+        if ( job && job.state === 'before' ) {
+
+            console.log( 'timeout', job );
+
+            job.timer = null;
+            job.state = 'timeout';
         }
     }
 }]);
