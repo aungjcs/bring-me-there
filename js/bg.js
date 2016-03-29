@@ -118,7 +118,7 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 chrome.storage.local.get( 'setting', function( storage ) {
 
     // load clear hosts
-    clearHashHosts = storage.setting.clearHashHost || [];
+    clearHashHosts = storage.setting && storage.setting.clearHashHost || [];
 });
 
 function sendMsg( msg ) {
@@ -135,6 +135,45 @@ function sendMsg( msg ) {
     });
 }
 
+var TaskMananger = (function() {
+
+    var tm = {};
+    var jobs = tm.jobs = {};
+
+    tm.registerJob = function( options ) {
+
+        // register job for tab
+        jobs[options.tabId] = {};
+        jobs[options.tabId].tabId = options.tabId;
+        jobs[options.tabId].tasks = options.tasks;
+
+        tm.nextTask({ tabId: options.tabId });
+    };
+
+    tm.nextTask = function( options ) {
+
+        var job = jobs[options.tabId] || {};
+        var task, wait;
+
+        if ( !job.tasks || !job.tasks.length ) {
+
+            return;
+        }
+
+        task = job.tasks.shift();
+        wait = isNaN( +task.wait ) ? 0 : +task.wait;
+
+        console.log( 'nextTask', options.tabId, job, task );
+
+        setTimeout(function() {
+
+            chrome.tabs.sendMessage( options.tabId, { type: 'exec-task', task: task });
+        }, 100 + wait );
+    };
+
+    return tm;
+})();
+
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     if ( request.type === 'run-task' ) {
@@ -144,17 +183,40 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
             currentWindow: true
         }).then(function( tabs ) {
 
-            return chrome.storage.local.getAsync(['setting', 'tasks']).then(function( storage ) {
+            var tabId;
 
-                console.log( 'storage', storage );
+            if ( !tabs.length ) {
+
+                throw 'Active tab not found';
+            }
+
+            tabId = tabs[0].id;
+
+            return chrome.storage.local.getAsync(['tasks']).then(function( storage ) {
+
+                if ( !storage.tasks && !storage.tasks.length ) {
+
+                    console.log( 'Received run-task but tasks not found.' );
+                    return;
+                }
+
+                TaskMananger.registerJob({
+                    tabId: tabId,
+                    tasks: storage.tasks
+                });
                 return storage;
             });
         });
-    }
+    } else if ( request.type === 'next-task' ) {
 
-    if ( request.type === 'updateWindow' && request.evtData ) {
+        var tabId = sender && sender.tab && sender.tab.id;
 
-        // updateWindow( request.evtData );
+        if ( isNaN( +tabId )) {
+
+            throw 'next-task tab id not found. TabId was: ' + tabId;
+        }
+
+        TaskMananger.nextTask({ tabId: tabId });
     }
 });
 
@@ -169,36 +231,11 @@ chrome.runtime.onStartup.addListener(function() {
 
 chrome.storage.onChanged.addListener(function( changed ) {
 
-    clearHashHosts = changed.setting.newValue.clearHashHost;
+    if ( changed.setting ) {
+
+        clearHashHosts = changed.setting.newValue.clearHashHost;
+    }
 });
-
-/*
-chrome.webRequest.onBeforeRequest.addListener(
-    function( details ) {
-
-        if ( details.url.indexOf( 'http://reload.extensions' ) >= 0 ) {
-
-            reloadExtensions();
-            chrome.tabs.get( details.tabId, function( tab ) {
-
-                if ( tab.selected === false ) {
-
-                    chrome.tabs.remove( details.tabId );
-                }
-            });
-            return {
-
-                // close the newly opened window
-                redirectUrl: chrome.extension.getURL( 'close.html' )
-            };
-        }
-
-        return { cancel: false };
-    }, {
-        urls: ['http://reload.extensions/'],
-        types: ['main_frame']
-    }, ['blocking']
-);*/
 
 chrome.runtime.onStartup.addListener(function() {
 
@@ -248,29 +285,9 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
     types: ['main_frame']
 }, ['blocking']);
 
-// chrome.webRequest.onBeforeRequest.addListener(function( details ) {
-
-//     // console.log( 'onBeforeRequest', details );
-
-//     var url = details.url;
-
-//     if ( url.match( /#.*$/ig )) {
-
-//         messageToActiveTab( details );
-//         return {
-//             redirectUrl: url.match( /^[^#]+/ig )[0]
-//         };
-//     }
-
-//     return { cancel: false };
-// }, {
-//     urls: ['*://localhost:*/*'],
-//     types: ['main_frame']
-// }, ['blocking']);
-
 chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
-    console.log( 'wr onBeforeRequest', details.requestId, details.tabId, details.frameId );
+    // console.log( 'wr onBeforeRequest', details.requestId, details.tabId, details.frameId );
 
     // messageToActiveTab({
     //     type: 'webRequest',
@@ -285,7 +302,7 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
 chrome.webRequest.onCompleted.addListener(function( details ) {
 
-    console.log( 'wr onCompleted', details.requestId, details.tabId, details.frameId );
+    // console.log( 'wr onCompleted', details.requestId, details.tabId, details.frameId );
 
     // messageToActiveTab({
     //     type: 'webRequest',
@@ -300,14 +317,14 @@ chrome.webRequest.onCompleted.addListener(function( details ) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
 
-    console.log( 'navi onBeforeNavigate', details.processId, details.tabId, details.frameId );
+    // console.log( 'navi onBeforeNavigate', details.processId, details.tabId, details.frameId );
 }, {
     urls: ['<all_urls>']
 });
 
 chrome.webNavigation.onCompleted.addListener(function( details ) {
 
-    console.log( 'navi onCompleted', details.processId, details.tabId, details.frameId );
+    // console.log( 'navi onCompleted', details.processId, details.tabId, details.frameId );
 }, {
     urls: ['<all_urls>']
 });
@@ -319,9 +336,19 @@ chrome.runtime.onInstalled.addListener(function( details ) {
 
 function messageToActiveTab( msg ) {
 
-    chrome.tabs.query({
+    messageToTab({
         pinned: true
-    }, function( tabs ) {
+    }, msg );
+}
+
+function messageToTab( tabQuery, msg ) {
+
+    chrome.tabs.query( tabQuery, function( tabs ) {
+
+        if ( !tabs.length ) {
+
+            throw 'Tab not found.';
+        }
 
         chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
 

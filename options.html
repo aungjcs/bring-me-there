@@ -48,6 +48,7 @@
                 <th>#</th>
                 <th>Selector</th>
                 <th>Type</th>
+                <th>Data</th>
                 <th>Wait(ms)</th>
                 <th>Memo</th>
                 <th></th>
@@ -61,6 +62,9 @@
                 </td>
                 <td>
                     <select class="form-control" ng-options="type for type in view.types" ng-model="t.type" ng-change="taskChanged(t)"></select>
+                </td>
+                <td>
+                    <input type="text" class="data form-control" ng-model="t.data" ng-blur="taskChanged(t);">
                 </td>
                 <td>
                     <input type="number" class="wait form-control" ng-model="t.wait" ng-blur="taskChanged(t);">

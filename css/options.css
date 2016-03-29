@@ -9,6 +9,7 @@
     visibility: visible;
 }
 
+#tbl-tasks tbody td .data,
 #tbl-tasks tbody td .wait {
     max-width: 100px;
 }

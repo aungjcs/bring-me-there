@@ -58,10 +58,14 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        chrome.runtime.sendMessageAsync({
+        chrome.runtime.sendMessageAsync( null, {
             type: 'run-task'
-        }).then(function () {
-            
+        });
+    });
+    $( '#btnNextTasks' ).click(function() {
+
+        chrome.runtime.sendMessageAsync( null, {
+            type: 'next-task'
         });
     });
 }
