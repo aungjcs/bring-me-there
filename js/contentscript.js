@@ -1,4 +1,6 @@
-/* global jQuery, chrome */
+/* global jQuery, chrome, _ */
+
+var runningTasks = [];
 
 (function( $, undefined ) {
 
@@ -20,7 +22,9 @@
         if ( msgType === 'webRequest' ) {
 
             console.log( 'onMessage', msg );
-        } else if ( msgType === 'some' ) {
+        }
+
+        if ( msgType === 'some' ) {
 
             var i = 0;
             while ( i < 5000000 ) {
@@ -31,16 +35,31 @@
             console.log( 'ready to response' );
 
             sendResponse({ msg: 'I got your message.' });
-        } else if ( msgType === 'exec-task' ) {
+        }
+
+        if ( msgType === 'exec-task' ) {
 
             chrome.runtime.sendMessage({
                 type: 'next-task'
             });
 
-            setTimeout( function() {
+            setTimeout(function() {
 
                 execTask( msg.task );
             }, 1 );
+        }
+
+        if ( msgType === 'run-task' ) {
+
+            chrome.storage.local.getAsync( 'tasks' ).then(function( storage ) {
+
+                var tasks = storage.tasks || [];
+            });
+        }
+
+        if ( msgType === 'connection-changed' ) {
+
+            console.log( 'connection-changed', msg.val );
         }
     });
 
@@ -70,3 +89,78 @@
         console.log( 'task', task );
     }
 })( jQuery );
+
+function runTasks( tasks ) {
+
+    runningTasks = tasks;
+
+    // handle for request
+    chrome.runtime.sendMessage({
+        type: 'listen-connection-changed'
+    });
+}
+
+function ignore() {
+
+    chrome.runtime.sendMessage({
+        type: 'ignore-connection-changed'
+    });
+}
+
+function waitConn() {
+
+    var defer = jQuery.Deferred();
+
+    conn(function( res ) {
+
+        defer.resolve( res );
+    });
+
+    return defer.promise();
+
+    function conn( cb ) {
+
+        setTimeout(function() {
+
+            chrome.runtime.sendMessage({
+                type: 'get-connection'
+            }, function( res ) {
+
+                var counted = _.countBy( res, function( v ) {
+
+                    return v.state;
+                });
+
+                console.log( 'res', counted );
+
+                if ( !counted.before || counted.before.length ) {
+
+                    cb( counted );
+                } else {
+
+                    conn( cb );
+                }
+
+            });
+        }, 500 );
+    }
+}
+
+function getConn() {
+
+    setTimeout(function() {
+
+        chrome.runtime.sendMessage({
+            type: 'get-connection'
+        }, function( res ) {
+
+            var counted = _.countBy( res, function( v ) {
+
+                return v.state;
+            });
+
+            console.log( 'res', counted );
+            getConn();
+        });
+    }, 500 );
+}

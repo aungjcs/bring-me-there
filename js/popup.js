@@ -1,4 +1,4 @@
-/* global chrome, async, jQuery, window, angular, config, Promise, common */
+/* global chrome, async, jQuery, window, angular, config, Promise, Common */
 var $ = jQuery;
 var manifest = chrome.runtime.getManifest();
 
@@ -58,9 +58,11 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        chrome.runtime.sendMessageAsync( null, {
-            type: 'run-task'
-        });
+        // chrome.runtime.sendMessageAsync( null, {
+        //     type: 'run-task'
+        // });
+
+        Common.messageToTab({ active: true }, { type: 'run-task' });
     });
     $( '#btnNextTasks' ).click(function() {
 

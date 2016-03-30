@@ -18,7 +18,9 @@
             <label>
                 <input type="checkbox" ng-model="listen" ng-change="setListen();">listen requests
             </label>
+            <button class="btn btn-warning" ng-click="jobs.length=0">Clear</button>
         </div>
+        {{jobs | byKeyVal:'state':'before' | len}}
         <div class="col-md-12">
             <ul class="pull-left">
                 <li><label>navi:{{navis.length}}</label></li>

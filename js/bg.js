@@ -1,4 +1,4 @@
-/*global common */
+/*global Common */
 
 var REQUEST_TIMEOUT = 10 * 1000;
 var clearHashHosts = [];
@@ -6,6 +6,7 @@ var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var app = angular.module( 'extApp', []);
 var jobs = [];
 var isListening = false;
+var listeningTabs = {};
 
 handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
@@ -84,7 +85,7 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 
         var key, id, job, timer;
 
-        if ( !isListening ) {
+        if ( !listeningTabs[details.tabId] ) {
 
             return;
         }
@@ -102,6 +103,7 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
             jobs.unshift({
                 key: key,
                 id: id,
+                tabId: details.tabId,
                 state: options.state,
                 type: options.type,
                 details: details,
@@ -132,13 +134,34 @@ app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
 
         if ( job && job.state === 'before' ) {
 
-            console.log( 'timeout', job );
-
             job.timer = null;
             job.state = 'timeout';
         }
     }
 }]);
+
+app.filter( 'byKeyVal', function() {
+
+    return function( input, key, checkVal ) {
+
+        input = input || [];
+
+        return input.filter(function( v ) {
+
+            return v[key] === checkVal;
+        });
+    };
+});
+
+app.filter( 'len', function() {
+
+    return function( input ) {
+
+        input = input || [];
+
+        return input.length;
+    };
+});
 
 chrome.storage.local.get( 'setting', function( storage ) {
 
@@ -201,6 +224,8 @@ var TaskMananger = (function() {
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
+    var tabId = sender && sender.tab && sender.tab.id;
+
     if ( request.type === 'run-task' ) {
 
         chrome.tabs.queryAsync({
@@ -232,9 +257,9 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
                 return storage;
             });
         });
-    } else if ( request.type === 'next-task' ) {
+    }
 
-        var tabId = sender && sender.tab && sender.tab.id;
+    if ( request.type === 'next-task' ) {
 
         if ( isNaN( +tabId )) {
 
@@ -242,6 +267,44 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }
 
         TaskMananger.nextTask({ tabId: tabId });
+    }
+
+    if ( request.type === 'listen-connection-changed' ) {
+
+        if ( isNaN( +tabId )) {
+
+            throw 'next-task tab id not found. TabId was: ' + tabId;
+        }
+
+        listeningTabs[tabId] = true;
+    }
+
+    if ( request.type === 'ignore-connection-changed' ) {
+
+        if ( isNaN( +tabId )) {
+
+            throw 'next-task tab id not found. TabId was: ' + tabId;
+        }
+
+        delete listeningTabs[tabId];
+
+        jobs = jobs.filter(function( v ) {
+
+            return v.tabId !== tabId;
+        });
+    }
+
+    if ( request.type === 'get-connection' ) {
+
+        if ( isNaN( +tabId )) {
+
+            throw 'next-task tab id not found. TabId was: ' + tabId;
+        }
+
+        sendResponse( jobs.filter(function( v ) {
+
+            return v.tabId === tabId;
+        }));
     }
 });
 
@@ -361,25 +424,9 @@ chrome.runtime.onInstalled.addListener(function( details ) {
 
 function messageToActiveTab( msg ) {
 
-    messageToTab({
+    Common.messageToTab({
         pinned: true
     }, msg );
-}
-
-function messageToTab( tabQuery, msg ) {
-
-    chrome.tabs.query( tabQuery, function( tabs ) {
-
-        if ( !tabs.length ) {
-
-            throw 'Tab not found.';
-        }
-
-        chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
-
-            console.log( 'res from cs', res );
-        });
-    });
 }
 
 console.log( 'i am bg' );

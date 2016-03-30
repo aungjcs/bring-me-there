@@ -27,6 +27,22 @@ var Common = {};
         };
     };
 
+    Common.messageToTab = function( tabQuery, msg ) {
+
+        chrome.tabs.query( tabQuery, function( tabs ) {
+
+            if ( !tabs.length ) {
+
+                throw 'Tab not found.';
+            }
+
+            chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
+
+                console.log( 'res from cs', res );
+            });
+        });
+    };
+
     function ChromeExtPromisifier( originalMethod ) {
 
         // return a function
