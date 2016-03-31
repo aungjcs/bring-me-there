@@ -1,12 +1,13 @@
 /*global Common */
 
-var REQUEST_TIMEOUT = 10 * 1000;
+var REQUEST_TIMEOUT = 60 * 1000;
 var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var app = angular.module( 'extApp', []);
 var jobs = [];
 var isListening = false;
 var listeningTabs = {};
+var tabsObj = {};
 
 handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
@@ -226,38 +227,21 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     var tabId = sender && sender.tab && sender.tab.id;
 
-    if ( request.type === 'run-task' ) {
+    // if ( request.type === 'save-object' ) {
 
-        chrome.tabs.queryAsync({
-            active: true,
-            currentWindow: true
-        }).then(function( tabs ) {
+    //     if ( isNaN( +tabId )) {
 
-            var tabId;
+    //         throw 'save-object tab id not found. TabId was: ' + tabId;
+    //     }
 
-            if ( !tabs.length ) {
+    //     if ( !request.data ) {
 
-                throw 'Active tab not found';
-            }
+    //         return;
+    //     }
 
-            tabId = tabs[0].id;
-
-            return chrome.storage.local.getAsync(['tasks']).then(function( storage ) {
-
-                if ( !storage.tasks && !storage.tasks.length ) {
-
-                    console.log( 'Received run-task but tasks not found.' );
-                    return;
-                }
-
-                TaskMananger.registerJob({
-                    tabId: tabId,
-                    tasks: storage.tasks
-                });
-                return storage;
-            });
-        });
-    }
+    //     tabsObj[tabId] = tabsObj[tabId] || {};
+    //     tabsObj[tabId] = request.data;
+    // }
 
     if ( request.type === 'next-task' ) {
 
@@ -273,17 +257,20 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         if ( isNaN( +tabId )) {
 
-            throw 'next-task tab id not found. TabId was: ' + tabId;
+            throw 'listen-connection-changed tab id not found. TabId was: ' + tabId;
         }
 
         listeningTabs[tabId] = true;
+
+        // we have to send back response cos process will start after response callback.
+        sendResponse();
     }
 
     if ( request.type === 'ignore-connection-changed' ) {
 
         if ( isNaN( +tabId )) {
 
-            throw 'next-task tab id not found. TabId was: ' + tabId;
+            throw 'ignore-connection-changed tab id not found. TabId was: ' + tabId;
         }
 
         delete listeningTabs[tabId];
@@ -292,13 +279,16 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
             return v.tabId !== tabId;
         });
+
+        // we have to send back response cos process will start after response callback.
+        sendResponse();
     }
 
     if ( request.type === 'get-connection' ) {
 
         if ( isNaN( +tabId )) {
 
-            throw 'next-task tab id not found. TabId was: ' + tabId;
+            throw 'get-connection tab id not found. TabId was: ' + tabId;
         }
 
         sendResponse( jobs.filter(function( v ) {
@@ -352,11 +342,6 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
             if ( url.indexOf( u ) >= 0 ) {
 
-                messageToActiveTab({
-                    type: 'webRequest',
-                    data: details
-                });
-
                 if ( !redirect ) {
 
                     redirect = {
@@ -373,60 +358,17 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
     types: ['main_frame']
 }, ['blocking']);
 
-chrome.webRequest.onBeforeRequest.addListener(function( details ) {
+chrome.commands.onCommand.addListener(function( command ) {
 
-    // console.log( 'wr onBeforeRequest', details.requestId, details.tabId, details.frameId );
+    if ( command === 'run-default-tasks' ) {
 
-    // messageToActiveTab({
-    //     type: 'webRequest',
-    //     data: details
-    // });
+        Common.messageToTab({ active: true }, { type: 'run-task' });
+    }
 
-    return { cancel: false };
-}, {
-    urls: ['<all_urls>'],
-    types: handleRequestTypes
+    if ( command === 'open-options-page' ) {
+
+        Common.openTab( chrome.extension.getURL( 'options.html' ));
+    }
 });
-
-chrome.webRequest.onCompleted.addListener(function( details ) {
-
-    // console.log( 'wr onCompleted', details.requestId, details.tabId, details.frameId );
-
-    // messageToActiveTab({
-    //     type: 'webRequest',
-    //     data: details
-    // });
-
-    return { cancel: false };
-}, {
-    urls: ['<all_urls>'],
-    types: handleRequestTypes
-});
-
-chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
-
-    // console.log( 'navi onBeforeNavigate', details.processId, details.tabId, details.frameId );
-}, {
-    urls: ['<all_urls>']
-});
-
-chrome.webNavigation.onCompleted.addListener(function( details ) {
-
-    // console.log( 'navi onCompleted', details.processId, details.tabId, details.frameId );
-}, {
-    urls: ['<all_urls>']
-});
-
-chrome.runtime.onInstalled.addListener(function( details ) {
-
-    // messageToActiveTab( details );
-});
-
-function messageToActiveTab( msg ) {
-
-    Common.messageToTab({
-        pinned: true
-    }, msg );
-}
 
 console.log( 'i am bg' );

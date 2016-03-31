@@ -46,6 +46,22 @@ var Common = {};
         });
     };
 
+    Common.openTab = function( url ) {
+
+        chrome.tabs.queryAsync({
+            url: url
+        }).then(function( tabs ) {
+
+            if ( tabs.length ) {
+
+                chrome.tabs.update( tabs[0].id, { active: true });
+                return;
+            }
+
+            chrome.tabs.create({ url: url });
+        });
+    };
+
     function ChromeExtPromisifier( originalMethod ) {
 
         // return a function

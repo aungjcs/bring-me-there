@@ -11,25 +11,8 @@ function main() {
 
     $( '#btnOpenBg' ).click(function( evt ) {
 
-        var bgUrl = chrome.extension.getURL( 'bg.html' );
-
         evt.preventDefault();
-
-        // search background page by url
-        // if exists we will make it active
-        // if not open in new tab
-        chrome.tabs.queryAsync({
-            url: bgUrl
-        }).then(function( tabs ) {
-
-            if ( tabs.length ) {
-
-                chrome.tabs.update( tabs[0].id, { active: true });
-                return;
-            }
-
-            chrome.tabs.create({ url: bgUrl });
-        });
+        Common.openTab( chrome.extension.getURL( 'bg.html' ));
     });
 
     // open options page
@@ -58,16 +41,9 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        // chrome.runtime.sendMessageAsync( null, {
-        //     type: 'run-task'
-        // });
+        Common.messageToTab({ active: true }, { type: 'run-task' }).then(function() {
 
-        Common.messageToTab({ active: true }, { type: 'run-task' });
-    });
-    $( '#btnNextTasks' ).click(function() {
-
-        chrome.runtime.sendMessageAsync( null, {
-            type: 'next-task'
+            window.close();
         });
     });
 }

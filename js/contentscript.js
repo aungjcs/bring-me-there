@@ -1,122 +1,112 @@
-/* global jQuery, chrome, _ */
+/* global jQuery, chrome, _, Promise */
 
 var runningTasks = [];
+var $ = jQuery;
+var NEXT_TASK_WAIT = 100;
 
-(function( $, undefined ) {
+chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
-    window.addEventListener( 'wrc-extension-resize', function( evt ) {
+    var msgType = msg && msg.type;
 
-        var evtData = evt.detail;
+    if ( msgType === 'webRequest' ) {
 
-        chrome.runtime.sendMessage({
-            type: 'updateWindow',
-            evtData: evtData
-        });
+        console.log( 'onMessage', msg );
+    }
 
-    }, false );
+    if ( msgType === 'run-task' ) {
 
-    chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
+        chrome.storage.local.get( 'tasks', function( storage ) {
 
-        var msgType = msg && msg.type;
+            runningTasks = storage.tasks || [];
 
-        if ( msgType === 'webRequest' ) {
+            // remove disabled task
+            runningTasks = runningTasks.filter(function( v ) {
 
-            console.log( 'onMessage', msg );
-        }
-
-        if ( msgType === 'some' ) {
-
-            var i = 0;
-            while ( i < 5000000 ) {
-
-                i = i + 1;
-            }
-
-            console.log( 'ready to response' );
-
-            sendResponse({ msg: 'I got your message.' });
-        }
-
-        if ( msgType === 'exec-task' ) {
+                return !v.disabled;
+            });
 
             chrome.runtime.sendMessage({
-                type: 'next-task'
+                type: 'listen-connection-changed'
+            }, function() {
+
+                runTasks();
             });
-
-            setTimeout(function() {
-
-                execTask( msg.task );
-            }, 1 );
-        }
-
-        if ( msgType === 'run-task' ) {
-
-            chrome.storage.local.getAsync( 'tasks' ).then(function( storage ) {
-
-                var tasks = storage.tasks || [];
-            });
-        }
-
-        if ( msgType === 'connection-changed' ) {
-
-            console.log( 'connection-changed', msg.val );
-        }
-    });
-
-    function execTask( task ) {
-
-        var $ele = $( task.selector );
-        var ele = $ele[0];
-
-        if ( !ele ) {
-
-            console.log( 'Element not found', task );
-            return;
-        }
-
-        if ( task.type === 'click' ) {
-
-            ele.dispatchEvent( new MouseEvent( 'click' ));
-
-        } else if ( task.type === 'text' ) {
-
-            $ele.val( task.data );
-
-            ele.dispatchEvent( new Event( 'change' ));
-        }
-
-        // body...
-        console.log( 'task', task );
+        });
     }
-})( jQuery );
+});
 
-function runTasks( tasks ) {
+function runTasks() {
 
-    runningTasks = tasks;
+    var wait, nextTask;
+    var task = runningTasks.shift();
 
-    // handle for request
-    chrome.runtime.sendMessage({
-        type: 'listen-connection-changed'
+    if ( !task ) {
+
+        return;
+    }
+
+    execTask( task ).then(function() {
+
+        if ( runningTasks.length ) {
+
+            nextTask = runningTasks[0];
+            wait = ( isNaN( +nextTask.wait ) ? 0 : +nextTask.wait ) + NEXT_TASK_WAIT;
+
+            waitConn().then(function() {
+
+                _.delay( runTasks, wait );
+            });
+        } else {
+
+            chrome.runtime.sendMessage({
+                type: 'ignore-connection-changed'
+            });
+        }
     });
 }
 
-function ignore() {
+function execTask( task ) {
 
-    chrome.runtime.sendMessage({
-        type: 'ignore-connection-changed'
+    var $ele = $( task.selector );
+    var ele = $ele[0];
+
+    if ( !ele ) {
+
+        console.error( 'Element not found', task );
+        return Promise.reject( 'Element not found' );
+    }
+
+    if ( task.type === 'click' ) {
+
+        ele.dispatchEvent( new MouseEvent( 'click' ));
+
+    } else if ( task.type === 'text' ) {
+
+        $ele.val( task.data );
+
+        ele.dispatchEvent( new Event( 'change' ));
+    }
+
+    return new Promise(function( resolve ) {
+
+        setTimeout(function() {
+
+            resolve();
+        }, 1 );
     });
 }
 
 function waitConn() {
 
-    var defer = jQuery.Deferred();
+    return new Promise(function( resolve, reject ) {
 
-    conn(function( res ) {
+        conn(function( res ) {
 
-        defer.resolve( res );
+            console.warn( 'wait conn resolved.' );
+
+            resolve( res );
+        });
     });
-
-    return defer.promise();
 
     function conn( cb ) {
 
@@ -131,8 +121,6 @@ function waitConn() {
                     return v.state;
                 });
 
-                console.log( 'res', counted );
-
                 if ( !counted.before || counted.before.length ) {
 
                     cb( counted );
@@ -142,25 +130,6 @@ function waitConn() {
                 }
 
             });
-        }, 500 );
+        }, 100 );
     }
-}
-
-function getConn() {
-
-    setTimeout(function() {
-
-        chrome.runtime.sendMessage({
-            type: 'get-connection'
-        }, function( res ) {
-
-            var counted = _.countBy( res, function( v ) {
-
-                return v.state;
-            });
-
-            console.log( 'res', counted );
-            getConn();
-        });
-    }, 500 );
 }
