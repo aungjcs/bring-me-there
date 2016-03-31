@@ -29,16 +29,19 @@ var Common = {};
 
     Common.messageToTab = function( tabQuery, msg ) {
 
-        chrome.tabs.query( tabQuery, function( tabs ) {
+        return new Promise(function( resolve ) {
 
-            if ( !tabs.length ) {
+            chrome.tabs.query( tabQuery, function( tabs ) {
 
-                throw 'Tab not found.';
-            }
+                if ( !tabs.length ) {
 
-            chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
+                    throw 'Tab not found.';
+                }
 
-                console.log( 'res from cs', res );
+                chrome.tabs.sendMessage( tabs[0].id, msg, function( res ) {
+
+                    resolve( res );
+                });
             });
         });
     };
