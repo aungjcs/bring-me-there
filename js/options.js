@@ -42,6 +42,8 @@ function main() {
             storeSetting({
                 tasks: view.tasks
             });
+
+            $scope.$applyAsync( setSortable );
         };
 
         $scope.removeTask = function( task ) {
@@ -54,6 +56,7 @@ function main() {
             storeSetting({
                 tasks: view.tasks
             });
+            $scope.$applyAsync( setSortable );
         };
 
         $scope.clearTasks = function() {
@@ -63,7 +66,45 @@ function main() {
                 view.tasks.length = 0;
                 $scope.$applyAsync();
             });
+
+            $scope.$applyAsync( setSortable );
         };
+
+        function setSortable() {
+
+            $( '#tasks-table ' ).sortable({
+                items: 'tr.task-row',
+                handle: '.change-order',
+                revert: true,
+                placeholder: 'bg-warning sortable-placeholder',
+                update: sorttableUpdated
+            });
+        }
+
+        function sorttableUpdated( event, ui ) {
+
+            var mapTasks = {};
+            var $rows = ui.item.closest( 'tbody' ).find( '.task-row' );
+            var sortted = [];
+
+            view.tasks.forEach(function( v ) {
+
+                mapTasks[v.id] = v;
+            });
+
+            view.tasks.length = 0;
+
+            $rows.each(function() {
+
+                var $r = $( this );
+                var id = $r.data( 'task-id' );
+
+                view.tasks.push( mapTasks[id] );
+            });
+
+            $scope.taskChanged();
+            $scope.$applyAsync();
+        }
 
         chrome.storage.local.getAsync(['setting', 'tasks']).then(function( storage ) {
 
@@ -72,7 +113,7 @@ function main() {
             $scope.view.clearHashHost = setting.clearHashHost || [];
             $scope.view.tasks = storage.tasks || [];
 
-            $scope.$applyAsync();
+            $scope.$applyAsync( setSortable );
         });
 
         function storeSetting( setting ) {

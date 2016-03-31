@@ -1,15 +1,29 @@
-
-#tbl-tasks tbody td .cell-icon{
+#tasks-table tbody td .cell-icon {
     visibility: hidden;
-    float: right;
     cursor: pointer;
 }
 
-#tbl-tasks tbody td:hover .cell-icon{
+#tasks-table tbody td .change-order {
+    margin-right: 5px;
+    cursor: move;
+}
+
+#tasks-table tbody td .edit-selector {
+    float: right;
+}
+
+#tasks-table tbody tr:hover .cell-icon {
     visibility: visible;
 }
 
-#tbl-tasks tbody td .data,
-#tbl-tasks tbody td .wait {
+#tasks-table tbody td .data,
+#tasks-table tbody td .wait {
     max-width: 100px;
+}
+
+#tasks-table tbody tr.sortable-placeholder {
+    border: 2px dashed #337ab7;
+}
+#tasks-table tbody tr.sortable-placeholder td {
+    border-width: 0;
 }

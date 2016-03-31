@@ -8,15 +8,11 @@
     <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
     <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
     <script src="js/lib/angular-strap.min.js"></script>
     <script src="js/lib/angular-strap.tpl.min.js"></script>
     <script src="js/common.js"></script>
-    <style>
-    body: {
-        padding: 10px;
-    }
-    </style>
 </head>
 
 <body ng-controller="BodyCtrl">
@@ -43,9 +39,9 @@
                 </div>
             </div>
         </div>
-        <table id="tbl-tasks" class="table table-striped">
-            <tr>
-                <th>#</th>
+        <table id="tasks-table" class="table">
+            <tr class="header-row">
+                <th></th>
                 <th>Disabled</th>
                 <th>Selector</th>
                 <th>Type</th>
@@ -54,14 +50,19 @@
                 <th>Memo</th>
                 <th></th>
             </tr>
-            <tr ng-repeat="t in view.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}">
-                <td><b>{{$index + 1}}</b></td>
+            <tr class="task-row" ng-repeat="t in view.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}" data-task-id="{{t.id}}">
+                <td>
+                    <small class="text-primary form-control-static">
+                        <i class="glyphicon glyphicon-sort change-order cell-icon"></i>
+                    </small>
+                    <label class="form-control-static">{{$index + 1}}</label>
+                </td>
                 <td>
                     <input type="checkbox" ng-model="t.disabled" ng-change="taskChanged(t);">
                 </td>
                 <td>
                     <label class="form-control-static" ng-show="!selectorEdit">{{t.selector}}</label>
-                    <i class="glyphicon glyphicon-pencil cell-icon" ng-click="selectorEdit=true;setFocus($event)" ng-show="!selectorEdit"></i>
+                    <i class="glyphicon glyphicon-pencil form-control-static edit-selector cell-icon text-primary" ng-click="selectorEdit=true;setFocus($event)" ng-show="!selectorEdit"></i>
                     <input type="text" class="form-control" ng-model="t.selector" ng-show="selectorEdit" ng-blur="selectorEdit=false;taskChanged(t);">
                 </td>
                 <td>

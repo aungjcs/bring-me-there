@@ -1,4 +1,4 @@
-/* global chrome, async, jQuery, window, angular, config, Promise, Common */
+/* global chrome, jQuery, window, angular, Promise, Common */
 var $ = jQuery;
 var manifest = chrome.runtime.getManifest();
 
