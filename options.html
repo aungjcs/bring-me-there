@@ -42,7 +42,7 @@
         <table id="tasks-table" class="table">
             <tr class="header-row">
                 <th></th>
-                <th>Disabled</th>
+                <th>Off</th>
                 <th>Selector</th>
                 <th>Type</th>
                 <th>Data</th>
@@ -61,24 +61,24 @@
                     <input type="checkbox" ng-model="t.disabled" ng-change="taskChanged(t);">
                 </td>
                 <td>
-                    <label class="form-control-static" ng-show="!selectorEdit">{{t.selector}}</label>
+                    <label class="form-control-static selector" ng-show="!selectorEdit" ng-click="selectorEdit=true;setFocus($event)">{{t.selector}}</label>
                     <i class="glyphicon glyphicon-pencil form-control-static edit-selector cell-icon text-primary" ng-click="selectorEdit=true;setFocus($event)" ng-show="!selectorEdit"></i>
                     <input type="text" class="form-control" ng-model="t.selector" ng-show="selectorEdit" ng-blur="selectorEdit=false;taskChanged(t);">
                 </td>
                 <td>
                     <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="taskChanged(t)"></select>
                 </td>
-                <td>
-                    <input type="text" class="data form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="taskChanged(t);">
+                <td class="data">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="taskChanged(t);">
+                </td>
+                <td class="wait">
+                    <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="taskChanged(t);">
+                </td>
+                <td class="memo">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.memo" ng-blur="taskChanged(t);">
                 </td>
                 <td>
-                    <input type="number" class="wait form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="taskChanged(t);">
-                </td>
-                <td></td>
-                <td>
-                    <button class="btn btn-danger btn-xs" ng-disabled="t.disabled" ng-click="removeTask(t)">
-                        <i class="glyphicon glyphicon-remove"></i>
-                    </button>
+                    <i class="form-control-static glyphicon glyphicon-remove text-danger remove-task cell-icon" ng-click="removeTask(t)"></i>
                 </td>
             </tr>
         </table>

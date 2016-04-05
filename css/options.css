@@ -1,29 +1,81 @@
-#tasks-table tbody td .cell-icon {
+#tasks-table tbody td .cell-icon
+{
     visibility: hidden;
+
     cursor: pointer;
 }
 
-#tasks-table tbody td .change-order {
+#tasks-table tbody td .change-order
+{
     margin-right: 5px;
+
     cursor: move;
 }
 
-#tasks-table tbody td .edit-selector {
+#tasks-table tbody td .edit-selector
+{
     float: right;
 }
 
-#tasks-table tbody tr:hover .cell-icon {
+#tasks-table tbody tr:hover .cell-icon
+{
     visibility: visible;
 }
 
-#tasks-table tbody td .data,
-#tasks-table tbody td .wait {
+#tasks-table tbody .selector
+{
+    cursor: pointer;
+}
+
+#tasks-table tbody .selector:hover
+{
+    text-decoration: underline;
+}
+
+#tasks-table tbody td.wait input
+{
     max-width: 100px;
 }
 
-#tasks-table tbody tr.sortable-placeholder {
+#tasks-table tbody td.data input,
+#tasks-table tbody td.memo input
+{
+    max-width: 150px;
+}
+
+#tasks-table tbody td.data input,
+#tasks-table tbody td.wait input,
+#tasks-table tbody td.memo input
+{
+    /*font-weight: bold;*/
+    width: 150px;
+
+    cursor: pointer;
+
+    border-width: 0;
+    box-shadow: inset 0 0 0;
+}
+
+#tasks-table tbody td:hover input
+{
+    border-width: 1px;
+}
+
+#tasks-table tbody td input:focus
+{
+    font-weight: normal;
+
+    cursor: auto;
+
+    border-width: 1px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+}
+
+#tasks-table tbody tr.sortable-placeholder
+{
     border: 2px dashed #337ab7;
 }
-#tasks-table tbody tr.sortable-placeholder td {
+#tasks-table tbody tr.sortable-placeholder td
+{
     border-width: 0;
 }

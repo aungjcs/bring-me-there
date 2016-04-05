@@ -34,7 +34,8 @@ function main() {
                 id: new Date().getTime(),
                 selector: 'div#container .search button[ng-click*=addSomething]',
                 type: 'click',
-                wait: 0
+                wait: 0,
+                memo: 'new'
             };
 
             view.tasks.push( newTask );
