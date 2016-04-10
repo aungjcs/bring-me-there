@@ -22,8 +22,8 @@
                 <a class="navbar-brand" href="#">
                     <img alt="Brand" src="img/bmt-38.png">
                 </a>
-                
                 <p class="navbar-text"><b>Bring me there</b></p>
+
             </div>
         </div>
     </nav>
@@ -31,9 +31,9 @@
         Clear hash hosts:
         <div ng-repeat="h in view.clearHashHost track by $index">{{$index}}:{{h}}</div>
         <div class="form-horizontal">
-
             <div class="form-group">
                 <div class="col-md-12">
+
                     <button class="btn btn-primary" ng-click="addTask()">Add task</button>
                     <button class="btn btn-danger" ng-click="clearTasks()">Clear task</button>
                 </div>
@@ -58,12 +58,10 @@
                     <label class="form-control-static">{{$index + 1}}</label>
                 </td>
                 <td>
-                    <input type="checkbox" ng-model="t.disabled" ng-change="taskChanged(t);">
+                    <input type="checkbox" class="form-control" ng-model="t.disabled" ng-change="taskChanged(t);">
                 </td>
-                <td>
-                    <label class="form-control-static selector" ng-show="!selectorEdit" ng-click="selectorEdit=true;setFocus($event)">{{t.selector}}</label>
-                    <i class="glyphicon glyphicon-pencil form-control-static edit-selector cell-icon text-primary" ng-click="selectorEdit=true;setFocus($event)" ng-show="!selectorEdit"></i>
-                    <input type="text" class="form-control" ng-model="t.selector" ng-show="selectorEdit" ng-blur="selectorEdit=false;taskChanged(t);">
+                <td class="selector">
+                    <input type="text" class="form-control" ng-model="t.selector" ng-blur="taskChanged(t);">
                 </td>
                 <td>
                     <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="taskChanged(t)"></select>
