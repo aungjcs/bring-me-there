@@ -24,7 +24,13 @@
         "module": true,
         "moment": true,
         "require": true,
-        "window": true
+        "window": true,
+        "chrome": true,
+        "jQuery": true,
+        "window": true,
+        "angular": true,
+        "Promise": true,
+        "Common": true
     },
     "latedef": false,
     "loopfunc": true,
