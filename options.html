@@ -4,7 +4,7 @@
 <head>
     <title>Bring me there options</title>
     <link href="css/lib/normalize.css" rel="stylesheet">
-    <link href="css/lib/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/lib/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
     <script src="js/lib/jquery.min.js"></script>
@@ -23,7 +23,6 @@
                     <img alt="Brand" src="img/bmt-38.png">
                 </a>
                 <p class="navbar-text"><b>Bring me there</b></p>
-
             </div>
         </div>
     </nav>
@@ -32,14 +31,40 @@
         <div ng-repeat="h in view.clearHashHost track by $index">{{$index}}:{{h}}</div>
         <div class="form-horizontal">
             <div class="form-group">
-                <div class="col-md-12">
-
-                    <button class="btn btn-primary" ng-click="addTask()">Add task</button>
-                    <button class="btn btn-danger" ng-click="clearTasks()">Clear task</button>
+                <div class="col-md-5">
+                    <!-- add job -->
+                    <div class="input-group" ng-show="view.jobStatus === 'new'">
+                        <span class="input-group-addon">Job</span>
+                        <input type="text" id="newJobName" class="form-control" ng-model="view.newJobName" placeholder="Job name">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" ng-click="cancleNewJob()">Cancel</button>
+                            <button class="btn btn-default" ng-click="addJob()" ng-show="view.jobStatus === 'new'">Add</button>
+                        </span>
+                    </div>
+                    <!-- job list -->
+                    <div class="input-group" ng-show="view.jobStatus === 'list'">
+                        <span class="input-group-addon">Job</span>
+                        <!-- <select class="form-control" ng-model="view.selectedJob" ng-options="job.jobName for job in view.jobs track by job.jobId" ng-change="selectedJobChange(view.selectedJob)"></select> -->
+                        <select class="form-control" ng-model="view.selectedJob" ng-change="selectedJobChange()">
+                            <option ng-repeat="job in view.jobs track by job.jobId" ng-value="job">{{job.jobName}}</option>
+                        </select>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" ng-click="editJob()">Edit</button>
+                            <button class="btn btn-default" ng-click="newJob()">New</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-7 text-right">
+                    <button class="btn btn-success" ng-click="addTask()" ng-disabled="!view.selectedJob">
+                        <i class="glyphicon glyphicon-plus-sign"></i> Add task
+                    </button>
+                    <button class="btn btn-danger" ng-click="clearTasks()" ng-disabled="!view.selectedJob">
+                        <i class="glyphicon glyphicon-remove-sign"></i> Clear tasks
+                    </button>
                 </div>
             </div>
         </div>
-        <table id="tasks-table" class="table">
+        <table id="tasks-table" class="table form-group">
             <tr class="header-row">
                 <th></th>
                 <th>Off</th>
@@ -50,7 +75,7 @@
                 <th>Memo</th>
                 <th></th>
             </tr>
-            <tr class="task-row" ng-repeat="t in view.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}" data-task-id="{{t.id}}">
+            <tr class="task-row" ng-repeat="t in view.selectedJob.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}" data-task-id="{{t.id}}">
                 <td>
                     <small class="text-primary form-control-static">
                         <i class="glyphicon glyphicon-sort change-order cell-icon"></i>

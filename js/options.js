@@ -2,14 +2,20 @@ function main() {
 
     var app = angular.module( 'extApp', ['mgcrea.ngStrap']);
 
-    app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
+    app.controller( 'BodyCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
 
         var $timeout = $injector.get( '$timeout' );
         var $ = angular.element;
+        var scope = $scope;
         var view = $scope.view = {
+            scope: $scope,
             clearHashHost: [],
+            jobs: [],
             tasks: [],
-            types: ['click', 'text']
+            types: ['click', 'text'],
+            jobStatus: 'list',
+            selectedJob: null,
+            newJobName: ''
         };
 
         $scope.taskChanged = function() {
@@ -19,6 +25,21 @@ function main() {
             });
         };
 
+        $scope.jobChanged = function() {
+
+            storeSetting({
+                jobs: view.jobs
+            });
+        };
+
+        $scope.selectedJobChange = function() {
+
+            storeSetting({
+                selectedJobId: view.selectedJob.jobId
+            });
+            $scope.jobChanged();
+        };
+
         $scope.setFocus = function( $event ) {
 
             $timeout(function() {
@@ -26,6 +47,43 @@ function main() {
                 $( $event.target ).siblings( 'input' ).focus();
 
             }, 10 );
+        };
+
+        $scope.newJob = function() {
+
+            view.jobStatus = 'new';
+
+            $timeout(function() {
+
+                $element.find( '#newJobName' ).focus();
+            }, 10 );
+        };
+
+        $scope.addJob = function() {
+
+            if ( !view.newJobName ) {
+
+                return;
+            }
+
+            view.jobStatus = 'list';
+
+            view.jobs.push({
+                jobId: ( new Date()).getTime(),
+                jobName: view.newJobName
+            });
+
+            view.newJobName = '';
+
+            view.selectedJob = view.jobs[view.jobs.length - 1];
+
+            $scope.jobChanged();
+            $scope.selectedJobChange();
+        };
+
+        $scope.cancleNewJob = function() {
+
+            view.jobStatus = 'list';
         };
 
         $scope.addTask = function() {
@@ -38,29 +96,31 @@ function main() {
                 memo: 'new'
             };
 
-            view.tasks.push( newTask );
+            view.selectedJob.tasks = view.selectedJob.tasks || [];
 
-            storeSetting({
-                tasks: view.tasks
-            });
+            view.selectedJob.tasks.push( newTask );
+
+            $scope.jobChanged();
 
             $scope.$applyAsync( setSortable );
         };
 
         $scope.removeTask = function( task ) {
 
-            view.tasks = view.tasks.filter(function( v ) {
+            view.selectedJob.tasks = view.selectedJob.tasks.filter(function( v ) {
 
                 return task.id !== v.id;
             });
 
-            storeSetting({
-                tasks: view.tasks
-            });
-            $scope.$applyAsync( setSortable );
+            $scope.jobChanged();
         };
 
         $scope.clearTasks = function() {
+
+            if ( !window.confirm( 'Clear all ?' )) {
+
+                return;
+            }
 
             chrome.storage.local.removeAsync( 'tasks' ).then(function() {
 
@@ -88,33 +148,48 @@ function main() {
             var $rows = ui.item.closest( 'tbody' ).find( '.task-row' );
             var sortted = [];
 
-            view.tasks.forEach(function( v ) {
+            view.selectedJob.tasks.forEach(function( v ) {
 
                 mapTasks[v.id] = v;
             });
 
-            view.tasks.length = 0;
+            view.selectedJob.tasks.length = 0;
 
             $rows.each(function() {
 
                 var $r = $( this );
                 var id = $r.data( 'task-id' );
 
-                view.tasks.push( mapTasks[id] );
+                view.selectedJob.tasks.push( mapTasks[id] );
             });
 
             $scope.taskChanged();
             $scope.$applyAsync();
         }
 
-        chrome.storage.local.getAsync(['setting', 'tasks']).then(function( storage ) {
+        chrome.storage.local.getAsync(['setting', 'jobs', 'tasks', 'selectedJobId']).then(function( storage ) {
 
             var setting = storage.setting || {};
 
-            $scope.view.clearHashHost = setting.clearHashHost || [];
-            $scope.view.tasks = storage.tasks || [];
+            view.clearHashHost = setting.clearHashHost || [];
+            view.jobs = storage.jobs || [];
+            view.tasks = storage.tasks || [];
 
-            $scope.$applyAsync( setSortable );
+            if ( storage.selectedJobId ) {
+
+                view.selectedJob = view.jobs.find(function( v ) {
+
+                    return v.jobId === storage.selectedJobId;
+                });
+            } else if ( !view.selectedJob && view.jobs.length ) {
+
+                view.selectedJob = view.jobs[0];
+            }
+
+            $scope.$applyAsync( function() {
+
+                setSortable();
+            } );
         });
 
         function storeSetting( setting ) {
