@@ -1,4 +1,3 @@
-/* global chrome, jQuery, window, angular, Promise, Common */
 var $ = jQuery;
 var manifest = chrome.runtime.getManifest();
 
@@ -26,7 +25,7 @@ function main() {
 
             // Reasonable fallback.
         }
-        window.open( chrome.runtime.getURL( 'options.html' ));
+        Common.openTab( chrome.runtime.getURL( 'options.html' ));
     });
 
     $( '#btnSetClearHash' ).click(function() {
