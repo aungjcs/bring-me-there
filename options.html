@@ -45,7 +45,7 @@
                     <!-- job list -->
                     <div class="input-group" ng-show="view.jobStatus === 'list'">
                         <span class="input-group-addon">Job</span>
-                        <select class="form-control" ng-model="view.selectedJob" ng-options="j.jobName for j in view.jobs" ng-change="selectedJobChange(view.selectedJob)"></select>
+                        <select class="form-control" id="jobs" ng-model="view.selectedJob" ng-options="j as j.jobName for j in view.jobs" ng-change="selectedJobChange(view.selectedJob)"></select>
                         <span class="input-group-btn">
                             <button class="btn btn-default" ng-click="editJob()">Edit</button>
                             <button class="btn btn-default" ng-click="newJob()">New</button>

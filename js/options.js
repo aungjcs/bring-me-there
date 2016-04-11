@@ -183,10 +183,11 @@ function main() {
                 view.selectedJob = view.jobs[0];
             }
 
-            $scope.$applyAsync( function() {
+            $scope.$applyAsync(function() {
 
                 setSortable();
-            } );
+            });
+
         });
 
         function storeSetting( setting ) {
