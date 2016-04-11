@@ -7,6 +7,7 @@
     <link href="css/lib/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
+    <script src="js/lib/underscore-1.7.0.min.js"></script>
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
@@ -44,10 +45,7 @@
                     <!-- job list -->
                     <div class="input-group" ng-show="view.jobStatus === 'list'">
                         <span class="input-group-addon">Job</span>
-                        <!-- <select class="form-control" ng-model="view.selectedJob" ng-options="job.jobName for job in view.jobs track by job.jobId" ng-change="selectedJobChange(view.selectedJob)"></select> -->
-                        <select class="form-control" ng-model="view.selectedJob" ng-change="selectedJobChange()">
-                            <option ng-repeat="job in view.jobs track by job.jobId" ng-value="job">{{job.jobName}}</option>
-                        </select>
+                        <select class="form-control" ng-model="view.selectedJob" ng-options="j.jobName for j in view.jobs" ng-change="selectedJobChange(view.selectedJob)"></select>
                         <span class="input-group-btn">
                             <button class="btn btn-default" ng-click="editJob()">Edit</button>
                             <button class="btn btn-default" ng-click="newJob()">New</button>
@@ -83,22 +81,22 @@
                     <label class="form-control-static">{{$index + 1}}</label>
                 </td>
                 <td>
-                    <input type="checkbox" class="form-control" ng-model="t.disabled" ng-change="taskChanged(t);">
+                    <input type="checkbox" class="form-control" ng-model="t.disabled" ng-change="jobChanged(t);">
                 </td>
                 <td class="selector">
-                    <input type="text" class="form-control" ng-model="t.selector" ng-blur="taskChanged(t);">
+                    <input type="text" class="form-control" ng-model="t.selector" ng-blur="jobChanged(t);">
                 </td>
                 <td>
-                    <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="taskChanged(t)"></select>
+                    <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="jobChanged(t)"></select>
                 </td>
                 <td class="data">
-                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="taskChanged(t);">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="jobChanged(t);">
                 </td>
                 <td class="wait">
-                    <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="taskChanged(t);">
+                    <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="jobChanged(t);">
                 </td>
                 <td class="memo">
-                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.memo" ng-blur="taskChanged(t);">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.memo" ng-blur="jobChanged(t);">
                 </td>
                 <td>
                     <i class="form-control-static glyphicon glyphicon-remove text-danger remove-task cell-icon" ng-click="removeTask(t)"></i>

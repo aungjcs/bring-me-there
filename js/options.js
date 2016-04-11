@@ -7,22 +7,19 @@ function main() {
         var $timeout = $injector.get( '$timeout' );
         var $ = angular.element;
         var scope = $scope;
-        var view = $scope.view = {
+        var accept = {
+            job: ['jobId', 'jobName', 'tasks']
+        };
+        var view = window.view = $scope.view = {
             scope: $scope,
             clearHashHost: [],
             jobs: [],
+            jobsMapped: {},
             tasks: [],
             types: ['click', 'text'],
             jobStatus: 'list',
             selectedJob: null,
             newJobName: ''
-        };
-
-        $scope.taskChanged = function() {
-
-            storeSetting({
-                tasks: view.tasks
-            });
         };
 
         $scope.jobChanged = function() {
@@ -37,7 +34,6 @@ function main() {
             storeSetting({
                 selectedJobId: view.selectedJob.jobId
             });
-            $scope.jobChanged();
         };
 
         $scope.setFocus = function( $event ) {
@@ -163,7 +159,7 @@ function main() {
                 view.selectedJob.tasks.push( mapTasks[id] );
             });
 
-            $scope.taskChanged();
+            $scope.jobChanged();
             $scope.$applyAsync();
         }
 
@@ -181,6 +177,7 @@ function main() {
 
                     return v.jobId === storage.selectedJobId;
                 });
+
             } else if ( !view.selectedJob && view.jobs.length ) {
 
                 view.selectedJob = view.jobs[0];
@@ -194,7 +191,18 @@ function main() {
 
         function storeSetting( setting ) {
 
-            return chrome.storage.local.setAsync( setting ).then(function() {
+            var storage = angular.copy( setting );
+
+            if ( _.isArray( storage.jobs )) {
+
+                storage.jobs = storage.jobs.map(function( v ) {
+
+                    // delete unaccept property
+                    return _.pick( v, accept.job );
+                });
+            }
+
+            return chrome.storage.local.setAsync( storage ).then(function() {
 
                 console.log( 'saved' );
             });

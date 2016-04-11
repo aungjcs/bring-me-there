@@ -30,7 +30,8 @@
         "window": true,
         "angular": true,
         "Promise": true,
-        "Common": true
+        "Common": true,
+        "_": true
     },
     "latedef": false,
     "loopfunc": true,
