@@ -3,6 +3,7 @@ var manifest = chrome.runtime.getManifest();
 
 // var VERSION = manifest.version;
 var activeTab, activeHost;
+var jobs;
 
 function main() {
 
@@ -45,6 +46,13 @@ function main() {
             window.close();
         });
     });
+
+    $( '#jobs' ).on( 'change', function() {
+
+        chrome.storage.local.set({
+            selectedJobId: +$( this ).val()
+        });
+    });
 }
 
 function updateHostClearHash( option ) {
@@ -81,11 +89,13 @@ function updateHostClearHash( option ) {
 
 function initView() {
 
-    chrome.storage.local.getAsync(['setting']).then(function( storage ) {
+    chrome.storage.local.getAsync(['setting', 'jobs', 'selectedJobId']).then(function( storage ) {
 
         var found;
         var setting = storage.setting || {};
         var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
+
+        jobs = storage.jobs || [];
 
         found = hosts.find(function( v ) {
 
@@ -104,6 +114,16 @@ function initView() {
 
                 $( '#btnStopClearHash' ).removeClass( 'hidden' );
             }
+        }
+
+        storage.jobs.forEach(function( v ) {
+
+            $( '#jobs' ).append( new Option( v.jobName, v.jobId ));
+        });
+
+        if ( storage.selectedJobId ) {
+
+            $( '#jobs' ).val( storage.selectedJobId );
         }
     });
 }
