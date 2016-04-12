@@ -91,11 +91,17 @@ function execTask( task ) {
 
         ele.dispatchEvent( new MouseEvent( 'click' ));
 
-    } else if ( task.type === 'text' ) {
+    } else if ( task.type === 'val' ) {
 
         $ele.val( task.data );
 
         ele.dispatchEvent( new Event( 'change' ));
+    } else if ( task.type === 'text' ) {
+
+        $ele.text( task.data );
+    } else if ( task.type === 'html' ) {
+
+        $ele.html( task.data );
     }
 
     return new Promise(function( resolve ) {

@@ -19,7 +19,7 @@ function main() {
             jobs: [],
             jobsMapped: {},
             tasks: [],
-            types: ['click', 'text'],
+            types: ['click', 'html', 'text', 'val'],
             jobStatus: 'list',
             selectedJob: null,
             inputJobName: ''
@@ -117,7 +117,7 @@ function main() {
                 return;
             }
 
-            if ( !confirm( 'Delete ?' )) {
+            if ( !window.confirm( 'Delete ?' )) {
 
                 return;
             }
@@ -167,6 +167,10 @@ function main() {
             $scope.jobChanged();
         };
 
+        $scope.copyTasks = function() {
+
+        };
+
         $scope.clearTasks = function() {
 
             if ( !window.confirm( 'Clear all ?' )) {
@@ -174,12 +178,8 @@ function main() {
                 return;
             }
 
-            chrome.storage.local.removeAsync( 'tasks' ).then(function() {
-
-                view.tasks.length = 0;
-                $scope.$applyAsync();
-            });
-
+            view.selectedJob.tasks.length = 0;
+            $scope.jobChanged();
             $scope.$applyAsync( setSortable );
         };
 
