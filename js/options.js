@@ -1,6 +1,9 @@
 function main() {
 
-    var app = angular.module( 'extApp', ['mgcrea.ngStrap']);
+    var app = angular.module( 'extApp', [
+        'ui.bootstrap',
+        'mgcrea.ngStrap'
+    ]);
 
     app.controller( 'BodyCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
 
@@ -80,6 +83,7 @@ function main() {
 
             view.jobStatus = 'list';
             view.selectedJob.jobName = view.inputJobName;
+            view.inputJobName = '';
 
             $scope.jobChanged();
         };
@@ -128,7 +132,7 @@ function main() {
             $scope.jobChanged();
         };
 
-        $scope.cancleJob = function() {
+        $scope.cancelJob = function() {
 
             view.jobStatus = 'list';
             view.inputJobName = '';

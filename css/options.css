@@ -3,6 +3,13 @@ body > nav > .container {
     width: 1180px;
 }
 
+#tasks-table tbody tr td input[type=checkbox]
+{
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+
+
 #tasks-table tr.header-row th
 {
     background-color: #f9f9f9;

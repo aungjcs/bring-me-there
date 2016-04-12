@@ -43,7 +43,7 @@
     },
     "options_ui": {
         "page": "options.html",
-        "chrome_style": true
+        "chrome_style": false
     },
     "content_scripts": [{
         "all_frames": false,
