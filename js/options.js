@@ -19,7 +19,7 @@ function main() {
             types: ['click', 'text'],
             jobStatus: 'list',
             selectedJob: null,
-            newJobName: ''
+            inputJobName: ''
         };
 
         $scope.jobChanged = function() {
@@ -51,13 +51,42 @@ function main() {
 
             $timeout(function() {
 
-                $element.find( '#newJobName' ).focus();
+                $element.find( '#inputJobName' ).focus();
             }, 10 );
+        };
+
+        $scope.editJob = function() {
+
+            if ( !view.selectedJob ) {
+
+                return;
+            }
+
+            view.jobStatus = 'edit';
+            view.inputJobName = view.selectedJob.jobName;
+
+            $timeout(function() {
+
+                $element.find( '#inputJobName' ).focus();
+            }, 10 );
+        };
+
+        $scope.updateJob = function() {
+
+            if ( !view.selectedJob ) {
+
+                return;
+            }
+
+            view.jobStatus = 'list';
+            view.selectedJob.jobName = view.inputJobName;
+
+            $scope.jobChanged();
         };
 
         $scope.addJob = function() {
 
-            if ( !view.newJobName ) {
+            if ( !view.inputJobName ) {
 
                 return;
             }
@@ -66,10 +95,10 @@ function main() {
 
             view.jobs.push({
                 jobId: ( new Date()).getTime(),
-                jobName: view.newJobName
+                jobName: view.inputJobName
             });
 
-            view.newJobName = '';
+            view.inputJobName = '';
 
             view.selectedJob = view.jobs[view.jobs.length - 1];
 
@@ -77,9 +106,32 @@ function main() {
             $scope.selectedJobChange();
         };
 
-        $scope.cancleNewJob = function() {
+        $scope.deleteJob = function() {
+
+            if ( !view.selectedJob ) {
+
+                return;
+            }
+
+            if ( !confirm( 'Delete ?' )) {
+
+                return;
+            }
+
+            view.jobs = view.jobs.filter(function( v ) {
+
+                return v.jobId !== view.selectedJob.jobId;
+            });
+
+            view.selectedJob = view.jobs.length ? view.jobs[0] : null;
+
+            $scope.jobChanged();
+        };
+
+        $scope.cancleJob = function() {
 
             view.jobStatus = 'list';
+            view.inputJobName = '';
         };
 
         $scope.addTask = function() {

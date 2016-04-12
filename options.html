@@ -34,12 +34,13 @@
             <div class="form-group">
                 <div class="col-md-5">
                     <!-- add job -->
-                    <div class="input-group" ng-show="view.jobStatus === 'new'">
+                    <div class="input-group" ng-show="view.jobStatus !== 'list'">
                         <span class="input-group-addon">Job</span>
-                        <input type="text" id="newJobName" class="form-control" ng-model="view.newJobName" placeholder="Job name">
+                        <input type="text" id="inputJobName" class="form-control" ng-model="view.inputJobName" placeholder="Job name">
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="button" ng-click="cancleNewJob()">Cancel</button>
+                            <button class="btn btn-default" ng-click="updateJob()" ng-show="view.jobStatus === 'edit'">Update</button>
                             <button class="btn btn-default" ng-click="addJob()" ng-show="view.jobStatus === 'new'">Add</button>
+                            <button class="btn btn-default" type="button" ng-click="cancleJob()">Cancel</button>
                         </span>
                     </div>
                     <!-- job list -->
@@ -47,8 +48,11 @@
                         <span class="input-group-addon">Job</span>
                         <select class="form-control" id="jobs" ng-model="view.selectedJob" ng-options="j as j.jobName for j in view.jobs" ng-change="selectedJobChange(view.selectedJob)"></select>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" ng-click="editJob()">Edit</button>
+                            <button class="btn btn-default" ng-click="deleteJob()">
+                                <i class="glyphicon glyphicon-remove"></i>
+                            </button>
                             <button class="btn btn-default" ng-click="newJob()">New</button>
+                            <button class="btn btn-default" ng-click="editJob()">Edit</button>
                         </span>
                     </div>
                 </div>

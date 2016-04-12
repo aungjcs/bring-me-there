@@ -15,9 +15,20 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
     if ( msgType === 'run-task' ) {
 
-        chrome.storage.local.get( 'tasks', function( storage ) {
+        chrome.storage.local.get( ['tasks', 'jobs', 'selectedJobId'], function( storage ) {
 
-            runningTasks = storage.tasks || [];
+            var selectedJob;
+
+            if(!storage.jobs || !storage.jobs.length) {
+                return;
+            }
+
+            selectedJob = storage.jobs.find(function ( v ) {
+                return v.jobId === storage.selectedJobId;
+            });
+
+            // runningTasks = storage.tasks || [];
+            runningTasks = selectedJob.tasks || [];
 
             // remove disabled task
             runningTasks = runningTasks.filter(function( v ) {

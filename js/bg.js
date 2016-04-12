@@ -326,7 +326,7 @@ chrome.management.onEnabled.addListener(function() {
 
     console.log( 'onEnabled', arguments );
 
-    chrome.tabs.create({ url: chrome.extension.getURL( 'bg.html' ) });
+    // chrome.tabs.create({ url: chrome.extension.getURL( 'bg.html' ) });
 });
 
 chrome.webRequest.onBeforeRequest.addListener(function( details ) {
