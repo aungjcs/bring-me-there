@@ -227,30 +227,52 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     var tabId = sender && sender.tab && sender.tab.id;
 
-    // if ( request.type === 'save-object' ) {
+    if ( request.type === 'save-running-tasks' ) {
 
-    //     if ( isNaN( +tabId )) {
+        if ( isNaN( +tabId )) {
 
-    //         throw 'save-object tab id not found. TabId was: ' + tabId;
-    //     }
+            throw 'save-object tab id not found. TabId was: ' + tabId;
+        }
 
-    //     if ( !request.data ) {
+        if ( !request.data ) {
 
-    //         return;
-    //     }
+            return;
+        }
 
-    //     tabsObj[tabId] = tabsObj[tabId] || {};
-    //     tabsObj[tabId] = request.data;
-    // }
+        tabsObj[tabId] = tabsObj[tabId] || {};
+        tabsObj[tabId].tasks = request.data;
+
+        sendResponse();
+    }
+
+    if ( request.type === 'load-object' ) {
+
+        if ( isNaN( +tabId )) {
+
+            throw 'load-object tab id not found. TabId was: ' + tabId;
+        }
+
+        sendResponse( tabsObj[tabId] );
+    }
 
     if ( request.type === 'next-task' ) {
+
+        var tasks;
 
         if ( isNaN( +tabId )) {
 
             throw 'next-task tab id not found. TabId was: ' + tabId;
         }
 
-        TaskMananger.nextTask({ tabId: tabId });
+        tasks = ( tabsObj[tabId] || {}).tasks;
+
+        if ( Array.isArray( tasks )) {
+
+            sendResponse( tasks.shift() );
+        } else {
+
+            sendResponse( null );
+        }
     }
 
     if ( request.type === 'listen-connection-changed' ) {

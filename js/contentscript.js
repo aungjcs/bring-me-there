@@ -15,33 +15,35 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
     if ( msgType === 'run-task' ) {
 
-        chrome.storage.local.get( ['tasks', 'jobs', 'selectedJobId'], function( storage ) {
+        chrome.storage.local.get(['tasks', 'jobs', 'selectedJobId'], function( storage ) {
 
-            var selectedJob;
+            var selectedJob, runningTasks;
 
-            if(!storage.jobs || !storage.jobs.length) {
+            if ( !storage.jobs || !storage.jobs.length ) {
+
                 return;
             }
 
-            selectedJob = storage.jobs.find(function ( v ) {
+            selectedJob = storage.jobs.find(function( v ) {
+
                 return v.jobId === storage.selectedJobId;
             });
 
-            // runningTasks = storage.tasks || [];
-            runningTasks = selectedJob.tasks || [];
-
             // remove disabled task
-            runningTasks = runningTasks.filter(function( v ) {
+            runningTasks = ( selectedJob.tasks || []).filter(function( v ) {
 
                 return !v.disabled;
             });
 
-            chrome.runtime.sendMessage({
-                type: 'listen-connection-changed'
-            }, function() {
+            chrome.runtime.sendMessageAsync({
+                type: 'save-running-tasks',
+                data: runningTasks
+            }).then(function() {
 
-                runTasks();
-            });
+                return chrome.runtime.sendMessageAsync({
+                    type: 'listen-connection-changed'
+                });
+            }).then( runTasks );
         });
     }
 });
@@ -51,29 +53,50 @@ function runTasks() {
     var wait, nextTask;
     var task = runningTasks.shift();
 
-    if ( !task ) {
+    chrome.runtime.sendMessageAsync({
+        type: 'next-task'
+    }).then(function( task ) {
 
-        return;
-    }
-
-    execTask( task ).then(function() {
-
-        if ( runningTasks.length ) {
-
-            nextTask = runningTasks[0];
-            wait = ( isNaN( +nextTask.wait ) ? 0 : +nextTask.wait ) + NEXT_TASK_WAIT;
-
-            waitConn().then(function() {
-
-                _.delay( runTasks, wait );
-            });
-        } else {
+        if ( !task ) {
 
             chrome.runtime.sendMessage({
                 type: 'ignore-connection-changed'
             });
+            return;
         }
+
+        waitConn().then(function( res ) {
+
+            // wait process
+            return new Promise(function( resolve ) {
+
+                setTimeout( resolve, ( isNaN( +task.wait ) ? 0 : +task.wait ) + NEXT_TASK_WAIT );
+            });
+        }).then(function() {
+
+            return execTask( task ).then( runTasks );
+        });
+
+        // execTask( task ).then(function() {
+
+        //     if ( runningTasks.length ) {
+
+        //         nextTask = runningTasks[0];
+        //         wait = ( isNaN( +nextTask.wait ) ? 0 : +nextTask.wait ) + NEXT_TASK_WAIT;
+
+        //         waitConn().then(function() {
+
+        //             _.delay( runTasks, wait );
+        //         });
+        //     } else {
+
+        //         chrome.runtime.sendMessage({
+        //             type: 'ignore-connection-changed'
+        //         });
+        //     }
+        // });
     });
+
 }
 
 function execTask( task ) {
