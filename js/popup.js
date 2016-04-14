@@ -41,7 +41,7 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        Common.messageToTab({ active: true }, { type: 'run-task' }).then(function() {
+        Common.messageToTab({ active: true, currentWindow: true }, { type: 'run-task' }).then(function() {
 
             window.close();
         });
