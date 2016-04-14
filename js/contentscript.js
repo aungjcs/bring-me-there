@@ -104,6 +104,12 @@ function execTask( task ) {
     var $ele = $( task.selector );
     var ele = $ele[0];
 
+    if ( task.type === 'url' ) {
+
+        window.location.href = task.data;
+        return end();
+    }
+
     if ( !ele ) {
 
         console.error( 'Element not found', task );
@@ -127,13 +133,18 @@ function execTask( task ) {
         $ele.html( task.data );
     }
 
-    return new Promise(function( resolve ) {
+    return end();
 
-        setTimeout(function() {
+    function end() {
 
-            resolve();
-        }, 1 );
-    });
+        return new Promise(function( resolve ) {
+
+            setTimeout(function() {
+
+                resolve();
+            }, 1 );
+        });
+    }
 }
 
 function waitConn() {

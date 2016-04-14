@@ -1,3 +1,4 @@
+/* global saveAs */
 function main() {
 
     var app = angular.module( 'extApp', [
@@ -19,7 +20,7 @@ function main() {
             jobs: [],
             jobsMapped: {},
             tasks: [],
-            types: ['click', 'html', 'text', 'val'],
+            types: ['click', 'html', 'text', 'val', 'url'],
             jobStatus: 'list',
             selectedJob: null,
             inputJobName: ''
@@ -74,6 +75,43 @@ function main() {
             }, 10 );
         };
 
+        $scope.copyJob = function() {
+
+            var newJob = window.newJob = angular.copy( view.selectedJob );
+            var newJobName;
+            var i = 1;
+            var nameDecided = false;
+            var newId = idFactory();
+
+            newJob.jobId = newId();
+
+            while ( !newJobName ) {
+
+                if ( !view.jobs.find(function( v ) {
+
+                    return v.jobName === newJob.jobName + '-' + i;
+                })) {
+
+                    newJobName = newJob.jobName + '-' + i;
+                }
+
+                i = i + 1;
+            }
+
+            newJob.jobName = newJobName;
+
+            newJob.tasks.forEach(function( v ) {
+
+                v.id = newId();
+            });
+
+            view.jobs.push( newJob );
+            view.selectedJob = newJob;
+
+            $scope.jobChanged();
+            $scope.selectedJobChange();
+        };
+
         $scope.updateJob = function() {
 
             if ( !view.selectedJob ) {
@@ -110,6 +148,21 @@ function main() {
             $scope.selectedJobChange();
         };
 
+        $scope.downloadJobs = function() {
+
+            var blob;
+            var jobs = angular.copy( view.jobs );
+
+            jobs = jobs.map(function( v ) {
+
+                return _.pick( v, accept.job );
+            });
+
+            blob = new Blob([JSON.stringify( jobs, null, '  ' )], { type: 'text/plain;charset=utf-8' });
+
+            saveAs( blob, 'jobs.json' );
+        };
+
         $scope.deleteJob = function() {
 
             if ( !view.selectedJob ) {
@@ -130,6 +183,7 @@ function main() {
             view.selectedJob = view.jobs.length ? view.jobs[0] : null;
 
             $scope.jobChanged();
+            $scope.selectedJobChange();
         };
 
         $scope.cancelJob = function() {
@@ -234,7 +288,9 @@ function main() {
                     return v.jobId === storage.selectedJobId;
                 });
 
-            } else if ( !view.selectedJob && view.jobs.length ) {
+            }
+
+            if ( !view.selectedJob && view.jobs.length ) {
 
                 view.selectedJob = view.jobs[0];
             }
@@ -263,6 +319,16 @@ function main() {
 
                 console.log( 'saved' );
             });
+        }
+
+        function idFactory() {
+
+            var id = new Date().getTime();
+            return function() {
+
+                id = id + 1;
+                return id;
+            };
         }
     }]);
 }

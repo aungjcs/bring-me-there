@@ -9,6 +9,7 @@
     <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
     <script src="js/lib/underscore-1.7.0.min.js"></script>
+    <script src="js/lib/FileSaver.min.js"></script>
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
@@ -59,7 +60,11 @@
                             </button>
                             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
                                 <li role="menuitem"><a href="" ng-click="editJob()">Edit</a></li>
-                                <li role="menuitem"><a href="">Delete</a></li>
+                                <li role="menuitem"><a href="" ng-click="copyJob()">Make a copy</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li role="menuitem"><a href="" ng-click="downloadJobs()">Download</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li role="menuitem"><a href="" ng-click="deleteJob()">Delete</a></li>
                             </ul>
                         </div>
                         <!-- update and cancel -->
@@ -95,7 +100,8 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
-                        <li role="menuitem"><a href="" ng-click="copyTasks()">Copy Tasks</a></li>
+                        <li role="menuitem"><a href="" ng-click="copyTasks()">Copy Tasks (in progress)</a></li>
+                        <li role="separator" class="divider"></li>
                         <li role="menuitem"><a href="" ng-click="clearTasks()">Clear Tasks</a></li>
                     </ul>
                 </div>
@@ -104,19 +110,19 @@
         <table id="tasks-table" class="table form-group">
             <tr class="header-row">
                 <th></th>
-                <th>Off</th>
-                <th>Selector</th>
-                <th>Type</th>
-                <th>Data</th>
-                <th>Wait(ms)</th>
-                <th>Memo</th>
-                <th></th>
+                <th class="text-center"><small>Off</small></th>
+                <th class="text-center"><small>Selector</small></th>
+                <th class="text-center"><small>Type</small></th>
+                <th class="text-center"><small>Data</small></th>
+                <th class="text-center"><small>Wait(ms)</small></th>
+                <th class="text-center"><small>Memo</small></th>
+                <th class="text-center"><small></th>
             </tr>
             <tr class="task-row" ng-repeat="t in view.selectedJob.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}" data-task-id="{{t.id}}">
                 <td>
                     <small class="text-primary form-control-static">
-                    <i class="glyphicon glyphicon-sort change-order cell-icon"></i>
-                </small>
+                        <i class="glyphicon glyphicon-sort change-order cell-icon"></i>
+                    </small>
                     <label class="form-control-static">{{$index + 1}}</label>
                 </td>
                 <td>

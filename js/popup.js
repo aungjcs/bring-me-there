@@ -53,6 +53,13 @@ function main() {
             selectedJobId: +$( this ).val()
         });
     });
+
+    $( '#cbxRunOnReload' ).on( 'change', function() {
+
+        chrome.runtime.getBackgroundPage(function( bg ) {
+
+        });
+    });
 }
 
 function updateHostClearHash( option ) {

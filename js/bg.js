@@ -8,6 +8,7 @@ var jobs = [];
 var isListening = false;
 var listeningTabs = {};
 var tabsObj = {};
+var popup = {};
 
 handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
