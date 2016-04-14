@@ -1,6 +1,5 @@
 /* global jQuery, chrome, _, Promise */
 
-var runningTasks = [];
 var $ = jQuery;
 var NEXT_TASK_WAIT = 100;
 
@@ -51,11 +50,12 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 function runTasks() {
 
     var wait, nextTask;
-    var task = runningTasks.shift();
 
     chrome.runtime.sendMessageAsync({
         type: 'next-task'
-    }).then(function( task ) {
+    }).then(function( res ) {
+
+        var task = res.task;
 
         if ( !task ) {
 
@@ -74,7 +74,12 @@ function runTasks() {
             });
         }).then(function() {
 
-            return execTask( task ).then( runTasks );
+            return execTask( task ).then( runTasks ).catch(function() {
+
+                chrome.runtime.sendMessage({
+                    type: 'task-failed'
+                });
+            });
         });
 
         // execTask( task ).then(function() {

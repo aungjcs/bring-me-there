@@ -2,7 +2,7 @@ var $ = jQuery;
 var manifest = chrome.runtime.getManifest();
 
 // var VERSION = manifest.version;
-var activeTab, activeHost;
+var bg, activeTab, activeHost;
 var jobs;
 
 function main() {
@@ -54,11 +54,28 @@ function main() {
         });
     });
 
+    if ( bg.popup.runOnLoads.find(function( v ) {
+
+        return v === activeTab.id;
+    })) {
+
+        $( '#cbxRunOnReload' ).prop( 'checked', true );
+    }
+
     $( '#cbxRunOnReload' ).on( 'change', function() {
 
-        chrome.runtime.getBackgroundPage(function( bg ) {
+        var chk = $( this ).prop( 'checked' );
 
-        });
+        if ( chk ) {
+
+            bg.popup.runOnLoads.push( activeTab.id );
+        } else {
+
+            bg.popup.runOnLoads = bg.popup.runOnLoads.filter(function( v ) {
+
+                return v !== activeTab.id;
+            });
+        }
     });
 }
 
@@ -96,7 +113,7 @@ function updateHostClearHash( option ) {
 
 function initView() {
 
-    chrome.storage.local.getAsync(['setting', 'jobs', 'selectedJobId']).then(function( storage ) {
+    return chrome.storage.local.getAsync(['setting', 'jobs', 'selectedJobId']).then(function( storage ) {
 
         var found;
         var setting = storage.setting || {};
@@ -135,7 +152,7 @@ function initView() {
     });
 }
 
-// cache active tab
+// cache active tab and bg
 chrome.tabs.queryAsync({ active: true }).then(function( tabs ) {
 
     if ( !tabs.length ) {
@@ -147,6 +164,16 @@ chrome.tabs.queryAsync({ active: true }).then(function( tabs ) {
     activeHost = activeTab.url.match( /https?:\/\/[^/]+/ig );
     activeHost = activeHost ? activeHost[0] : null;
 
-    initView();
+}).then(function() {
+
+    return chrome.runtime.getBackgroundPageAsync().then(function( _bg ) {
+
+        bg = _bg;
+    });
+}).then(function() {
+
+    return initView();
+}).then(function() {
+
     main();
 });

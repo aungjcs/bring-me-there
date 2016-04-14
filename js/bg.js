@@ -8,7 +8,9 @@ var jobs = [];
 var isListening = false;
 var listeningTabs = {};
 var tabsObj = {};
-var popup = {};
+var popup = {
+    runOnLoads: []
+};
 
 handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
@@ -185,45 +187,6 @@ function sendMsg( msg ) {
     });
 }
 
-var TaskMananger = (function() {
-
-    var tm = {};
-    var jobs = tm.jobs = {};
-
-    tm.registerJob = function( options ) {
-
-        // register job for tab
-        jobs[options.tabId] = {};
-        jobs[options.tabId].tabId = options.tabId;
-        jobs[options.tabId].tasks = options.tasks;
-
-        tm.nextTask({ tabId: options.tabId });
-    };
-
-    tm.nextTask = function( options ) {
-
-        var job = jobs[options.tabId] || {};
-        var task, wait;
-
-        if ( !job.tasks || !job.tasks.length ) {
-
-            return;
-        }
-
-        task = job.tasks.shift();
-        wait = isNaN( +task.wait ) ? 0 : +task.wait;
-
-        console.log( 'nextTask', options.tabId, job, task );
-
-        setTimeout(function() {
-
-            chrome.tabs.sendMessage( options.tabId, { type: 'exec-task', task: task });
-        }, 100 + wait );
-    };
-
-    return tm;
-})();
-
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     var tabId = sender && sender.tab && sender.tab.id;
@@ -242,6 +205,9 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         tabsObj[tabId] = tabsObj[tabId] || {};
         tabsObj[tabId].tasks = request.data;
+
+        chrome.browserAction.setBadgeText({ text: 'Run' });
+        chrome.browserAction.setBadgeBackgroundColor({ color: '#265a88' });
 
         sendResponse();
     }
@@ -269,7 +235,23 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         if ( Array.isArray( tasks )) {
 
-            sendResponse( tasks.shift() );
+            if ( tasks.length ) {
+
+                chrome.browserAction.setBadgeText({ text: '' + tasks.length });
+            } else {
+
+                chrome.browserAction.setBadgeText({ text: 'End' });
+                setTimeout(function() {
+
+                    chrome.browserAction.setBadgeText({ text: '' });
+                }, 1000 );
+
+            }
+
+            sendResponse({
+                task: tasks.shift()
+            });
+
         } else {
 
             sendResponse( null );
@@ -318,6 +300,31 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
             return v.tabId === tabId;
         }));
+    }
+
+    if ( request.type === 'task-failed' ) {
+
+        if ( isNaN( +tabId )) {
+
+            throw 'task-failed tab id not found. TabId was: ' + tabId;
+        }
+
+        delete listeningTabs[tabId];
+
+        jobs = jobs.filter(function( v ) {
+
+            return v.tabId !== tabId;
+        });
+
+        chrome.browserAction.setBadgeText({ text: 'Fail' });
+        chrome.browserAction.setBadgeBackgroundColor({ color: '#ff0000' });
+
+        setTimeout(function() {
+
+            chrome.browserAction.setBadgeText({ text: '' });
+        }, 2000 );
+
+        sendResponse();
     }
 });
 
