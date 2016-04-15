@@ -1,148 +1,121 @@
 /*global Common */
+/* jshint unused: false */
 
 var REQUEST_TIMEOUT = 60 * 1000;
 var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var app = angular.module( 'extApp', []);
-var jobs = [];
-var isListening = false;
+var connections = [];
 var listeningTabs = {};
 var tabsObj = {};
 var popup = {
     runOnLoads: []
 };
 
-handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
-app.controller( 'BodyCtrl', ['$scope', '$injector', function( $scope, $injector ) {
+// web request
+chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
-    $scope.jobs = jobs;
+    updateJobs({ id: details.requestId, state: 'before', type: 'wreq' }, details );
+}, {
+    urls: ['<all_urls>'],
+    types: handleRequestTypes
+});
 
-    $scope.$on( 'jobs:changed', function( event, details ) {
+chrome.webRequest.onCompleted.addListener(function( details ) {
 
-        // console.log( 'details', details );
+    updateJobs({ id: details.requestId, state: 'complete', type: 'wreq' }, details );
+}, {
+    urls: ['<all_urls>'],
+    types: handleRequestTypes
+});
 
-        $scope.$applyAsync();
-    });
+chrome.webRequest.onErrorOccurred.addListener(function( details ) {
 
-    $scope.setListen = function() {
+    updateJobs({ id: details.requestId, state: 'error', type: 'wreq' }, details );
+}, {
+    urls: ['<all_urls>'],
+    types: handleRequestTypes
+});
 
-        isListening = $scope.listen;
-    };
-}]);
+// web navigation
+chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
 
-app.run(['$rootScope', '$injector', function( $rootScope, $injector ) {
+    updateJobs({ id: details.processId, state: 'before', type: 'navi' }, details );
+}, {
+    urls: ['<all_urls>']
+});
 
-    // web request
-    chrome.webRequest.onBeforeRequest.addListener(function( details ) {
+chrome.webNavigation.onCompleted.addListener(function( details ) {
 
-        updateJobs({ id: details.requestId, state: 'before', type: 'wreq' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>'],
-        types: handleRequestTypes
-    });
+    updateJobs({ id: details.processId, state: 'complete', type: 'navi' }, details );
+}, {
+    urls: ['<all_urls>']
+});
 
-    chrome.webRequest.onCompleted.addListener(function( details ) {
+chrome.webNavigation.onErrorOccurred.addListener(function( details ) {
 
-        updateJobs({ id: details.requestId, state: 'complete', type: 'wreq' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>'],
-        types: handleRequestTypes
-    });
+    updateJobs({ id: details.processId, state: 'error', type: 'navi' }, details );
+}, {
+    urls: ['<all_urls>']
+});
 
-    chrome.webRequest.onErrorOccurred.addListener(function( details ) {
+function updateJobs( options, details ) {
 
-        updateJobs({ id: details.requestId, state: 'error', type: 'wreq' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>'],
-        types: handleRequestTypes
-    });
+    var key, id, conn, timer;
 
-    // web navigation
-    chrome.webNavigation.onBeforeNavigate.addListener(function( details ) {
+    if ( !listeningTabs[details.tabId] ) {
 
-        updateJobs({ id: details.processId, state: 'before', type: 'navi' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>']
-    });
-
-    chrome.webNavigation.onCompleted.addListener(function( details ) {
-
-        updateJobs({ id: details.processId, state: 'complete', type: 'navi' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>']
-    });
-
-    chrome.webNavigation.onErrorOccurred.addListener(function( details ) {
-
-        updateJobs({ id: details.processId, state: 'error', type: 'navi' }, details );
-        $rootScope.$broadcast( 'jobs:changed', details );
-    }, {
-        urls: ['<all_urls>']
-    });
-
-    function updateJobs( options, details ) {
-
-        var key, id, job, timer;
-
-        if ( !listeningTabs[details.tabId] ) {
-
-            return;
-        }
-
-        id = options.id;
-        key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
-
-        if ( options.state === 'before' ) {
-
-            timer = setTimeout(function() {
-
-                timeout( key );
-            }, REQUEST_TIMEOUT );
-
-            jobs.unshift({
-                key: key,
-                id: id,
-                tabId: details.tabId,
-                state: options.state,
-                type: options.type,
-                details: details,
-                timer: timer
-            });
-        } else {
-
-            job = jobs.find(function( v ) {
-
-                return v.key === key;
-            });
-
-            if ( job ) {
-
-                job.state = options.state;
-
-                job.timer && clearTimeout( job.timer );
-            }
-        }
+        return;
     }
 
-    function timeout( key ) {
+    id = options.id;
+    key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
 
-        var job = jobs.find(function( v ) {
+    if ( options.state === 'before' ) {
+
+        timer = setTimeout(function() {
+
+            timeout( key );
+        }, REQUEST_TIMEOUT );
+
+        connections.unshift({
+            key: key,
+            id: id,
+            tabId: details.tabId,
+            state: options.state,
+            type: options.type,
+            details: details,
+            timer: timer
+        });
+    } else {
+
+        conn = connections.find(function( v ) {
 
             return v.key === key;
         });
 
-        if ( job && job.state === 'before' ) {
+        if ( conn ) {
 
-            job.timer = null;
-            job.state = 'timeout';
+            conn.state = options.state;
+
+            conn.timer && clearTimeout( conn.timer );
         }
     }
-}]);
+}
+
+function timeout( key ) {
+
+    var conn = connections.find(function( v ) {
+
+        return v.key === key;
+    });
+
+    if ( conn && conn.state === 'before' ) {
+
+        conn.timer = null;
+        conn.state = 'timeout';
+    }
+}
 
 app.filter( 'byKeyVal', function() {
 
@@ -172,20 +145,6 @@ chrome.storage.local.get( 'setting', function( storage ) {
     // load clear hosts
     clearHashHosts = storage.setting && storage.setting.clearHashHost || [];
 });
-
-function sendMsg( msg ) {
-
-    chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    }, function( tabs ) {
-
-        chrome.tabs.sendMessage( tabs[0].id, msg, function( response ) {
-
-            console.log( response );
-        });
-    });
-}
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
@@ -280,7 +239,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         delete listeningTabs[tabId];
 
-        jobs = jobs.filter(function( v ) {
+        connections = connections.filter(function( v ) {
 
             return v.tabId !== tabId;
         });
@@ -296,7 +255,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
             throw 'get-connection tab id not found. TabId was: ' + tabId;
         }
 
-        sendResponse( jobs.filter(function( v ) {
+        sendResponse( connections.filter(function( v ) {
 
             return v.tabId === tabId;
         }));
@@ -311,7 +270,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         delete listeningTabs[tabId];
 
-        jobs = jobs.filter(function( v ) {
+        connections = connections.filter(function( v ) {
 
             return v.tabId !== tabId;
         });
@@ -328,35 +287,12 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
     }
 });
 
-chrome.runtime.onInstalled.addListener(function() {
-
-});
-
-chrome.runtime.onStartup.addListener(function() {
-
-    // ブラウザ起動時に呼ばれる
-});
-
 chrome.storage.onChanged.addListener(function( changed ) {
 
     if ( changed.setting ) {
 
         clearHashHosts = changed.setting.newValue.clearHashHost;
     }
-});
-
-chrome.runtime.onStartup.addListener(function() {
-
-    console.log( 'startup' );
-
-    // chrome.tabs.create({ url: chrome.extension.getURL( 'bg.html' ) });
-});
-
-chrome.management.onEnabled.addListener(function() {
-
-    console.log( 'onEnabled', arguments );
-
-    // chrome.tabs.create({ url: chrome.extension.getURL( 'bg.html' ) });
 });
 
 chrome.webRequest.onBeforeRequest.addListener(function( details ) {
@@ -387,6 +323,20 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
     urls: ['<all_urls>'],
     types: ['main_frame']
 }, ['blocking']);
+
+chrome.tabs.onRemoved.addListener(function( tabId, removeInfo ) {
+
+    // clear about removed tab
+    popup.runOnLoads = popup.runOnLoads.filter(function( v ) {
+
+        return v !== tabId;
+    });
+
+    delete listeningTabs[tabId];
+    delete tabsObj[tabId];
+
+    console.log( 'tabId', arguments, popup[tabId] );
+});
 
 chrome.commands.onCommand.addListener(function( command ) {
 

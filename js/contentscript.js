@@ -51,7 +51,7 @@ function runTasks() {
 
     var wait, nextTask;
 
-    chrome.runtime.sendMessageAsync({
+    return chrome.runtime.sendMessageAsync({
         type: 'next-task'
     }).then(function( res ) {
 
@@ -62,10 +62,10 @@ function runTasks() {
             chrome.runtime.sendMessage({
                 type: 'ignore-connection-changed'
             });
-            return;
+            return null;
         }
 
-        waitConn().then(function( res ) {
+        return waitConn().then(function( res ) {
 
             // wait process
             return new Promise(function( resolve ) {
@@ -76,7 +76,7 @@ function runTasks() {
 
             return execTask( task ).then( runTasks ).catch(function() {
 
-                chrome.runtime.sendMessage({
+                return chrome.runtime.sendMessage({
                     type: 'task-failed'
                 });
             });
@@ -158,7 +158,7 @@ function waitConn() {
 
         conn(function( res ) {
 
-            console.warn( 'wait conn resolved.' );
+            // console.warn( 'wait conn resolved.' );
 
             resolve( res );
         });

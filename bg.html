@@ -1,37 +1,17 @@
-<html ng-app="extApp">
+<html>
 
 <head>
     <link href="css/lib/normalize.css" rel="stylesheet">
     <link href="css/lib/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
     <title>Bring me there background page.</title>
-    <script src="js/lib/angular.min.js"></script>
     <script src="js/lib/bluebird.js"></script>
     <script src="js/common.js"></script>
 </head>
 
 <body ng-controller="BodyCtrl">
     <div class="container">
-        
-    <h1>Bring me there background page.</h1> jobs: {{jobs.length}}
-    <div class="row">
-        <div class="col-md-12">
-            <label>
-                <input type="checkbox" ng-model="listen" ng-change="setListen();">listen requests
-            </label>
-            <button class="btn btn-warning" ng-click="jobs.length=0">Clear</button>
-        </div>
-        {{jobs | byKeyVal:'state':'before' | len}}
-        <div class="col-md-12">
-            <ul class="pull-left">
-                <li><label>navi:{{navis.length}}</label></li>
-                <li ng-repeat="job in jobs | filter:'navi' as navis" ng-hide="job.state==='complete'">{{job.key}} {{job.state}} {{job.details.type}}</li>
-            </ul>
-            <ul class="pull-left">
-                <li><label>wreq:{{wreqs.length}}</label></li>
-                <li ng-repeat="job in jobs | filter:'wreq' as wreqs" ng-hide="job.state==='complete'">{{job.key}} {{job.state}} {{job.details.type}}</li>
-            </ul>
-        </div>
-    </div>
+        <h1>Bring me there background page.</h1>
+        <h1 style="color:red">Please close this page otherwise extension job will fail.</h1>
     </div>
     <script src="js/bg.js"></script>
 </body>
