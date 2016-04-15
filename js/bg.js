@@ -1,10 +1,9 @@
 /*global Common */
-/* jshint unused: false */
+/* jshint unused: true */
 
 var REQUEST_TIMEOUT = 60 * 1000;
 var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
-var app = angular.module( 'extApp', []);
 var connections = [];
 var listeningTabs = {};
 var tabsObj = {};
@@ -117,37 +116,23 @@ function timeout( key ) {
     }
 }
 
-app.filter( 'byKeyVal', function() {
-
-    return function( input, key, checkVal ) {
-
-        input = input || [];
-
-        return input.filter(function( v ) {
-
-            return v[key] === checkVal;
-        });
-    };
-});
-
-app.filter( 'len', function() {
-
-    return function( input ) {
-
-        input = input || [];
-
-        return input.length;
-    };
-});
-
 chrome.storage.local.get( 'setting', function( storage ) {
 
     // load clear hosts
     clearHashHosts = storage.setting && storage.setting.clearHashHost || [];
 });
 
+chrome.storage.onChanged.addListener(function( changed ) {
+
+    if ( changed.setting ) {
+
+        clearHashHosts = changed.setting.newValue.clearHashHost;
+    }
+});
+
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
+    var tasks;
     var tabId = sender && sender.tab && sender.tab.id;
 
     if ( request.type === 'save-running-tasks' ) {
@@ -181,9 +166,20 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         sendResponse( tabsObj[tabId] );
     }
 
-    if ( request.type === 'next-task' ) {
+    if ( request.type === 'load-tasks' ) {
 
-        var tasks;
+        if ( isNaN( +tabId )) {
+
+            throw 'load-task tab id not found. TabId was: ' + tabId;
+        }
+
+        tasks = ( tabsObj[tabId] || {}).tasks;
+        sendResponse({
+            tasks: Array.isArray( tasks ) ? tasks : []
+        });
+    }
+
+    if ( request.type === 'next-task' ) {
 
         if ( isNaN( +tabId )) {
 
@@ -284,14 +280,6 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }, 2000 );
 
         sendResponse();
-    }
-});
-
-chrome.storage.onChanged.addListener(function( changed ) {
-
-    if ( changed.setting ) {
-
-        clearHashHosts = changed.setting.newValue.clearHashHost;
     }
 });
 

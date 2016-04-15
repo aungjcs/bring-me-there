@@ -47,6 +47,19 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
     }
 });
 
+// if tasks still run next
+chrome.runtime.sendMessageAsync({
+    type: 'load-tasks'
+}).then(function( res ) {
+
+    if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
+
+        console.log('gonna run next', log);
+
+        runTasks();
+    }
+});
+
 function runTasks() {
 
     var wait, nextTask;
