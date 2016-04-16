@@ -9,6 +9,13 @@ function main() {
 
     console.log( 'bring me there!! i am popup' );
 
+    if ( !activeHost ) {
+
+        $( '#main' ).hide();
+        $( '#notwork' ).show();
+        return;
+    }
+
     $( '#btnOpenBg' ).click(function( evt ) {
 
         evt.preventDefault();
