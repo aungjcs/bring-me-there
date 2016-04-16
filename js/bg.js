@@ -79,9 +79,14 @@ function updateJobs( options, details ) {
     }
 
     id = options.id;
-    key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId + '_' + details.url;
+    key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
 
     if ( options.state === 'before' ) {
+
+        connections = connections.filter( v => {
+
+            return v.key !== key;
+        });
 
         timer = setTimeout(function() {
 
