@@ -16,9 +16,13 @@ function main() {
         return;
     }
 
+    $( '#project' ).click(function( evt ) {
+
+        Common.openTab( this.href );
+    });
+
     $( '#btnOpenBg' ).click(function( evt ) {
 
-        evt.preventDefault();
         Common.openTab( chrome.extension.getURL( 'bg.html' ));
     });
 

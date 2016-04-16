@@ -4,6 +4,10 @@ var Common = {};
 
     var manifest = chrome.runtime.getManifest();
 
+    Promise.config({
+        cancellation: true
+    });
+
     [
         chrome.browserAction,
         chrome.runtime,

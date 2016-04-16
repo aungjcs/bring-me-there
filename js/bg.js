@@ -10,6 +10,17 @@ var tabsObj = {};
 var popup = {
     runOnLoads: []
 };
+var newId = (function() {
+
+    var ts = 0;
+    return function() {
+
+        ts = ts + 1;
+        return ts;
+    };
+})();
+
+chrome.browserAction.setBadgeText({ text: '' });
 
 // web request
 chrome.webRequest.onBeforeRequest.addListener(function( details ) {
@@ -68,7 +79,7 @@ function updateJobs( options, details ) {
     }
 
     id = options.id;
-    key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId;
+    key = id + '_' + options.type + '_' + details.tabId + '_' + details.frameId + '_' + details.url;
 
     if ( options.state === 'before' ) {
 
@@ -88,7 +99,7 @@ function updateJobs( options, details ) {
         });
     } else {
 
-        conn = connections.find(function( v ) {
+        conn = connections.find( v => {
 
             return v.key === key;
         });
@@ -190,6 +201,10 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         if ( Array.isArray( tasks )) {
 
+            sendResponse({
+                task: tasks.shift()
+            });
+
             if ( tasks.length ) {
 
                 chrome.browserAction.setBadgeText({ text: '' + tasks.length });
@@ -202,10 +217,6 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
                 }, 1000 );
 
             }
-
-            sendResponse({
-                task: tasks.shift()
-            });
 
         } else {
 

@@ -7,11 +7,6 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
     var msgType = msg && msg.type;
 
-    if ( msgType === 'webRequest' ) {
-
-        console.log( 'onMessage', msg );
-    }
-
     if ( msgType === 'run-task' ) {
 
         chrome.storage.local.get(['tasks', 'jobs', 'selectedJobId'], function( storage ) {
@@ -54,12 +49,57 @@ chrome.runtime.sendMessageAsync({
 
     if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
 
-        console.log('gonna run next', log);
-
         runTasks();
     }
 });
 
+function runTasks() {
+
+    console.log( 'runtask' );
+
+    var task;
+    var promise = waitConn().then(function() {
+
+        return chrome.runtime.sendMessageAsync({
+            type: 'next-task'
+        }).then(function( res ) {
+
+            if ( !res || !res.task ) {
+
+                chrome.runtime.sendMessage({
+                    type: 'ignore-connection-changed'
+                });
+                promise.cancel();
+            } else {
+
+                task = res.task;
+            }
+
+            return null;
+        });
+    }).then(function() {
+
+        // wait process
+        return new Promise(function( resolve ) {
+
+            setTimeout( resolve, ( isNaN( +task.wait ) ? 0 : +task.wait ) + NEXT_TASK_WAIT );
+        });
+    }).then(function() {
+
+        return execTask( task );
+    }).then(function() {
+
+        runTasks();
+        return null;
+    }).catch(function() {
+
+        return chrome.runtime.sendMessage({
+            type: 'task-failed'
+        });
+    });
+}
+
+/*
 function runTasks() {
 
     var wait, nextTask;
@@ -94,28 +134,9 @@ function runTasks() {
                 });
             });
         });
-
-        // execTask( task ).then(function() {
-
-        //     if ( runningTasks.length ) {
-
-        //         nextTask = runningTasks[0];
-        //         wait = ( isNaN( +nextTask.wait ) ? 0 : +nextTask.wait ) + NEXT_TASK_WAIT;
-
-        //         waitConn().then(function() {
-
-        //             _.delay( runTasks, wait );
-        //         });
-        //     } else {
-
-        //         chrome.runtime.sendMessage({
-        //             type: 'ignore-connection-changed'
-        //         });
-        //     }
-        // });
     });
-
 }
+*/
 
 function execTask( task ) {
 
@@ -131,7 +152,7 @@ function execTask( task ) {
     if ( !ele ) {
 
         console.error( 'Element not found', task );
-        return Promise.reject( 'Element not found' );
+        return Promise.reject( new Error( 'Element not found' ));
     }
 
     if ( task.type === 'click' ) {
