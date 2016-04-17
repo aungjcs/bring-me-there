@@ -151,7 +151,7 @@ function initView() {
             }
         }
 
-        storage.jobs.forEach(function( v ) {
+        jobs.forEach(function( v ) {
 
             $( '#jobs' ).append( new Option( v.jobName, v.jobId ));
         });
