@@ -2,7 +2,8 @@
 /* jshint unused: true */
 
 var REQUEST_TIMEOUT = 60 * 1000;
-var clearHashHosts = [];
+
+// var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
 var connections = [];
 var listeningTabs = {};
@@ -122,7 +123,7 @@ function timeout( key ) {
         conn.state = 'timeout';
     }
 }
-
+/*
 chrome.storage.local.get( 'setting', function( storage ) {
 
     // load clear hosts
@@ -136,6 +137,7 @@ chrome.storage.onChanged.addListener(function( changed ) {
         clearHashHosts = changed.setting.newValue.clearHashHost;
     }
 });
+*/
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
@@ -191,6 +193,18 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         sendResponse({
             tasks: Array.isArray( tasks ) ? tasks : []
         });
+
+        // we have to clear browserAction msg if task not left
+        if ( listeningTabs[tabId] && ( !tasks || !tasks.length )) {
+
+            delete listeningTabs[tabId];
+
+            chrome.browserAction.setBadgeText({ text: 'End' });
+            setTimeout(function() {
+
+                chrome.browserAction.setBadgeText({ text: '' });
+            }, 1000 );
+        }
     }
 
     if ( request.type === 'next-task' ) {
@@ -204,21 +218,23 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         if ( Array.isArray( tasks )) {
 
-            sendResponse({
-                task: tasks.shift()
-            });
-
-            if ( tasks.length ) {
-
-                chrome.browserAction.setBadgeText({ text: '' + tasks.length });
-            } else {
+            if ( !tasks.length ) {
 
                 chrome.browserAction.setBadgeText({ text: 'End' });
                 setTimeout(function() {
 
                     chrome.browserAction.setBadgeText({ text: '' });
                 }, 1000 );
+
+                sendResponse( null );
+                return;
             }
+
+            sendResponse({
+                task: tasks.shift()
+            });
+
+            chrome.browserAction.setBadgeText({ text: '' + tasks.length });
 
         } else {
 
@@ -296,6 +312,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
     }
 });
 
+/*
 chrome.webRequest.onBeforeRequest.addListener(function( details ) {
 
     // console.log( 'onBeforeRequest', details );
@@ -324,6 +341,7 @@ chrome.webRequest.onBeforeRequest.addListener(function( details ) {
     urls: ['<all_urls>'],
     types: ['main_frame']
 }, ['blocking']);
+*/
 
 chrome.tabs.onRemoved.addListener(function( tabId, removeInfo ) {
 
@@ -344,11 +362,6 @@ chrome.commands.onCommand.addListener(function( command ) {
     if ( command === 'run-default-tasks' ) {
 
         Common.messageToTab({ active: true }, { type: 'run-task' });
-    }
-
-    if ( command === 'open-options-page' ) {
-
-        Common.openTab( chrome.extension.getURL( 'options.html' ));
     }
 });
 
