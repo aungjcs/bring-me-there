@@ -9,53 +9,67 @@ chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
     if ( msgType === 'run-task' ) {
 
-        chrome.storage.local.get(['tasks', 'jobs', 'selectedJobId'], function( storage ) {
-
-            var selectedJob, runningTasks;
-
-            if ( !storage.jobs || !storage.jobs.length ) {
-
-                return;
-            }
-
-            selectedJob = storage.jobs.find(function( v ) {
-
-                return v.jobId === storage.selectedJobId;
-            });
-
-            // remove disabled task
-            runningTasks = ( selectedJob.tasks || []).filter(function( v ) {
-
-                return !v.disabled;
-            });
-
-            chrome.runtime.sendMessageAsync({
-                type: 'save-running-tasks',
-                data: runningTasks
-            }).then(function() {
-
-                return chrome.runtime.sendMessageAsync({
-                    type: 'listen-connection-changed'
-                });
-            }).then( runTasks );
-        });
+        runTasks();
     }
 });
 
-// if tasks still run next
+// if tasks still left run next
 chrome.runtime.sendMessageAsync({
     type: 'load-tasks'
 }).then(function( res ) {
 
     if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
 
-        runTasks();
+        runNextTask();
+        return;
     }
+
+    chrome.runtime.sendMessageAsync({
+        type: 'is-run-onload'
+    }).then(( res ) => {
+
+        // run on reload
+        res && runTasks();
+    });
 });
+
+// function
 
 function runTasks() {
 
-    console.log( 'runtask' );
+    chrome.storage.local.get(['tasks', 'jobs', 'selectedJobId'], function( storage ) {
+
+        var selectedJob, runningTasks;
+
+        if ( !storage.jobs || !storage.jobs.length ) {
+
+            return;
+        }
+
+        selectedJob = storage.jobs.find(function( v ) {
+
+            return v.jobId === storage.selectedJobId;
+        });
+
+        // remove disabled task
+        runningTasks = ( selectedJob.tasks || []).filter(function( v ) {
+
+            return !v.disabled;
+        });
+
+        chrome.runtime.sendMessageAsync({
+            type: 'save-running-tasks',
+            data: runningTasks
+        }).then(function() {
+
+            return chrome.runtime.sendMessageAsync({
+                type: 'listen-connection-changed'
+            });
+        }).then( runNextTask );
+    });
+}
+
+function runNextTask() {
 
     var task;
     var promise = waitConn().then(function() {
@@ -89,7 +103,7 @@ function runTasks() {
         return execTask( task );
     }).then(function() {
 
-        runTasks();
+        runNextTask();
         return null;
     }).catch(function() {
 

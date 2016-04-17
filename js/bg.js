@@ -163,14 +163,21 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         sendResponse();
     }
 
-    if ( request.type === 'load-object' ) {
+    if ( request.type === 'is-run-onload' ) {
+
+        var result;
 
         if ( isNaN( +tabId )) {
 
-            throw 'load-object tab id not found. TabId was: ' + tabId;
+            throw 'is-run-onload tab id not found. TabId was: ' + tabId;
         }
 
-        sendResponse( tabsObj[tabId] );
+        result = popup.runOnLoads.find(( v ) => {
+
+            return v === tabId;
+        });
+
+        sendResponse( !!result );
     }
 
     if ( request.type === 'load-tasks' ) {
@@ -211,7 +218,6 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
                     chrome.browserAction.setBadgeText({ text: '' });
                 }, 1000 );
-
             }
 
         } else {
