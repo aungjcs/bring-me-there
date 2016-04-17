@@ -1,0 +1,43 @@
+[
+  {
+    "jobId": 1460381698261,
+    "jobName": "a",
+    "tasks": [
+      {
+        "id": 1460466133138,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "val",
+        "wait": 0
+      },
+      {
+        "id": 1460466133668,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "val",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460381700014,
+    "jobName": "b",
+    "tasks": [
+      {
+        "disabled": false,
+        "id": 1460381713255,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460465899113,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  }
+]

@@ -10,15 +10,6 @@ var tabsObj = {};
 var popup = {
     runOnLoads: []
 };
-var newId = (function() {
-
-    var ts = 0;
-    return function() {
-
-        ts = ts + 1;
-        return ts;
-    };
-})();
 
 chrome.browserAction.setBadgeText({ text: '' });
 

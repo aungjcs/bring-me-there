@@ -1,0 +1,257 @@
+[
+  {
+    "jobId": 1460381698261,
+    "jobName": "a",
+    "tasks": [
+      {
+        "id": 1460466133138,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "val",
+        "wait": 0
+      },
+      {
+        "id": 1460466133668,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "val",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460381700014,
+    "jobName": "b",
+    "tasks": [
+      {
+        "disabled": false,
+        "id": 1460381713255,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460465899113,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460381701835,
+    "jobName": "c",
+    "tasks": [
+      {
+        "id": 1460382388121,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460382388338,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460382388529,
+        "name": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460467260992,
+    "jobName": "hackbs",
+    "tasks": [
+      {
+        "data": "<a href=\"https://google.co.jp\">Google</a>",
+        "id": 1460467262997,
+        "name": "new",
+        "selector": "#carbonads-container .carbonad",
+        "type": "html",
+        "wait": 1000
+      },
+      {
+        "data": "yo dude bs 4",
+        "id": 1460467332893,
+        "name": "new",
+        "selector": ".v4-tease",
+        "type": "text",
+        "wait": 2000
+      },
+      {
+        "data": ".v4-tease",
+        "id": 1460470826839,
+        "name": "new",
+        "selector": ".v4-tease",
+        "type": "text",
+        "wait": 5000
+      }
+    ]
+  },
+  {
+    "jobId": 1460789199836,
+    "jobName": "_",
+    "tasks": [
+      {
+        "id": 1460789209088,
+        "name": "new",
+        "selector": "div#sidebar a[href=\"#collections\"]",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "disabled": false,
+        "id": 1460789209409,
+        "name": "new",
+        "selector": "div#sidebar a[href=\"#arrays\"]",
+        "type": "click",
+        "wait": 3000
+      },
+      {
+        "id": 1460789242155,
+        "name": "new",
+        "selector": "div#sidebar a[href=\"#functions\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460789272682,
+        "name": "new",
+        "selector": "div#sidebar a:first",
+        "type": "click",
+        "wait": 1000
+      }
+    ]
+  },
+  {
+    "jobId": 1460789979334,
+    "jobName": "yahoo",
+    "tasks": [
+      {
+        "data": "",
+        "id": 1460789980272,
+        "name": "auction",
+        "name": "action",
+        "selector": "div#yahooservice>ul>li>a.cbysC2",
+        "type": "click",
+        "wait": null
+      },
+      {
+        "id": 1460789980634,
+        "name": "to top",
+        "name": "main",
+        "selector": "a[href=\"http://www.yahoo.co.jp\"]",
+        "type": "click",
+        "wait": null
+      },
+      {
+        "id": 1460789981362,
+        "name": "TV",
+        "name": "news",
+        "selector": "div#yahooservice>ul>li>a.cbysC25",
+        "type": "click",
+        "wait": null
+      },
+      {
+        "id": 1460789982301,
+        "name": "to top",
+        "name": "main",
+        "selector": "a[href=\"http://www.yahoo.co.jp/\"]",
+        "type": "click",
+        "wait": null
+      },
+      {
+        "data": "github",
+        "id": 1460819521275,
+        "name": "search github",
+        "selector": "#srchtxt",
+        "type": "val",
+        "wait": 0
+      },
+      {
+        "id": 1460819593410,
+        "name": "",
+        "selector": "#srchbtn",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460792290892,
+    "jobName": "bs refresh",
+    "tasks": [
+      {
+        "id": 1460792291733,
+        "name": "new",
+        "selector": "nav a[href=\"../getting-started/\"]",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460792345438,
+        "name": "",
+        "selector": "nav a[href=\"../css/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460792345807,
+        "name": "new",
+        "selector": "nav a[href=\"../javascript/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460792346118,
+        "name": "new",
+        "selector": "nav a[href=\"../customize/\"]",
+        "type": "click",
+        "wait": 1000
+      }
+    ]
+  },
+  {
+    "jobId": 1460863439437,
+    "jobName": "bs refresh-1",
+    "tasks": [
+      {
+        "id": 1460863439438,
+        "name": "new",
+        "selector": "nav a[href=\"../getting-started/\"]",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460863439439,
+        "name": "",
+        "selector": "nav a[href=\"../css/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460863439440,
+        "name": "new",
+        "selector": "nav a[href=\"../javascript/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460863439441,
+        "name": "new",
+        "selector": "nav a[href=\"../customize/\"]",
+        "type": "click",
+        "wait": 1000
+      }
+    ]
+  }
+]

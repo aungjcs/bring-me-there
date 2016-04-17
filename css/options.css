@@ -1,18 +1,24 @@
 body > .container,
-body > nav > .container {
+body > nav > .container
+{
     width: 1180px;
 }
 
 #tasks-table tbody tr td input[type=checkbox]
 {
-    box-shadow: none;
     -webkit-box-shadow: none;
+            box-shadow: none;
 }
-
 
 #tasks-table tr.header-row th
 {
     background-color: #f9f9f9;
+}
+
+#tasks-table tbody tr.text-muted td
+{
+    background-color: #eee;
+    opacity: .6;
 }
 
 #tasks-table tbody td .cell-icon
@@ -44,32 +50,36 @@ body > nav > .container {
     cursor: pointer;
 }
 
-#tasks-table tbody td.selector input
+#tasks-table tbody td input[type=text],
+#tasks-table tbody td input[type=number]
 {
     width: 100%;
-    min-width: 300px;
+}
+
+#tasks-table tbody td.selector
+{
+    min-width: 350px;
 }
 
 #tasks-table tbody td.wait input
 {
-    width: 80px;
+    min-width: 80px;
 }
 
-#tasks-table tbody td.data input,
-#tasks-table tbody td.memo input
+#tasks-table tbody td.name input #tasks-table tbody td.data input,
 {
-    width: 150px;
+    min-width: 150px;
 }
 
 #tasks-table tbody td.selector input,
 #tasks-table tbody td.data input,
 #tasks-table tbody td.wait input,
-#tasks-table tbody td.memo input
+#tasks-table tbody td.name input
 {
     /*font-weight: bold;*/
     cursor: pointer;
-
     /*border-width: 0;*/
+
     border-color: transparent;
     box-shadow: inset 0 0 0;
 }
@@ -85,17 +95,62 @@ body > nav > .container {
     font-weight: normal;
 
     cursor: auto;
-
     /*border-width: 1px;*/
+
     border-color: #66afe9;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
 }
 
 #tasks-table tbody tr.sortable-placeholder
 {
     border: 2px dashed #337ab7;
 }
+
 #tasks-table tbody tr.sortable-placeholder td
 {
     border-width: 0;
+}
+
+#drop_zone
+{
+    font-size: 35px;
+
+    padding: 150px 100px;
+
+    text-align: center;
+
+    color: #bbb;
+    border: 2px dashed gray;
+    border-radius: 5px;
+}
+
+
+/* angular-strap
+***********************************************/
+
+.modal-backdrop.am-fade
+{
+    transition: opacity .15s linear;
+
+    opacity: .5;
+}
+
+.modal-backdrop.am-fade.ng-enter
+{
+    opacity: 0;
+}
+
+.modal-backdrop.am-fade.ng-enter-active
+{
+    opacity: .5;
+}
+
+.modal-backdrop.am-fade.ng-leave
+{
+    opacity: .5;
+}
+
+.modal-backdrop.am-fade.ng-leave-active
+{
+    opacity: 0;
 }

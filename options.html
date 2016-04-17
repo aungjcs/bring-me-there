@@ -13,6 +13,7 @@
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/angular-animate.min.js"></script>
     <script src="js/lib/ui-bootstrap-tpls.js"></script>
     <script src="js/lib/angular-strap.min.js"></script>
     <script src="js/lib/angular-strap.tpl.min.js"></script>
@@ -40,45 +41,78 @@
                     <select class="form-control" id="jobs" ng-model="view.selectedJob" ng-options="j as j.jobName for j in view.jobs" ng-change="selectedJobChange(view.selectedJob)" ng-show="view.jobStatus === 'list'"></select>
                     <input type="text" id="inputJobName" class="form-control" ng-model="view.inputJobName" placeholder="Job name" ng-show="view.jobStatus !== 'list'">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-5">
                     <!-- add edit delete -->
                     <div class="btn-group" uib-dropdown ng-show="view.jobStatus === 'list'">
-                        <button type="button" class="btn btn-primary" ng-click="newJob()">New</button>
-                        <button type="button" class="btn btn-primary" uib-dropdown-toggle>
+                        <button type="button" class="btn btn-default" ng-click="newJob()">
+                            <i class="glyphicon glyphicon-plus-sign text-primary"></i> New job
+                        </button>
+                        <button type="button" class="btn btn-default" uib-dropdown-toggle>
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
-                            <li role="menuitem"><a href="" ng-click="editJob()">Edit</a></li>
-                            <li role="menuitem"><a href="" ng-click="copyJob()">Make a copy</a></li>
+                            <li role="menuitem">
+                                <a href="" ng-click="editJob()">
+                                    <i class="glyphicon glyphicon glyphicon-edit text-primary"></i> Edit job
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="" ng-click="copyJob()">
+                                    <i class="glyphicon glyphicon glyphicon-duplicate text-primary"></i> Make a copy
+                                </a>
+                            </li>
                             <li role="separator" class="divider"></li>
-                            <li role="menuitem"><a href="" ng-click="downloadJobs()">Download</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li role="menuitem"><a href="" ng-click="deleteJob()">Delete</a></li>
+                            <li role="menuitem">
+                                <a href="" ng-click="deleteJob()">
+                                    <i class="glyphicon glyphicon glyphicon-remove text-danger"></i> Delete job
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <!-- update and cancel -->
                     <div class="btn-group" role="group" ng-show="view.jobStatus !== 'list'">
-                        <button type="button" class="btn btn-primary" ng-click="updateJob()" ng-if="view.jobStatus === 'edit'">Update</button>
-                        <button type="button" class="btn btn-primary" ng-click="addJob()" ng-if="view.jobStatus === 'new'">Add</button>
+                        <button type="button" class="btn btn-default" ng-click="updateJob()" ng-if="view.jobStatus === 'edit'">Update</button>
+                        <button type="button" class="btn btn-default" ng-click="addJob()" ng-if="view.jobStatus === 'new'">
+                            <i class="glyphicon glyphicon-ok-sign text-primary"></i> Add
+                        </button>
                         <!-- dropdown-toggle will make padding 8px -->
-                        <button type="button" class="btn btn-primary dropdown-toggle" title="Cancel" ng-click="cancelJob()">
+                        <button type="button" class="btn btn-default dropdown-toggle" title="Cancel" ng-click="cancelJob()">
                             <span>&times;</span>
                             <!-- <i class="glyphicon glyphicon-ban-circle"></i> -->
                         </button>
                     </div>
+                    <!-- upload and download -->
+                    <div class="btn-group">
+                        <button class="btn btn-default" ng-click="downloadJobs()">
+                            <i class="glyphicon glyphicon-download text-success"></i> Download
+                        </button>
+                        <button class="btn btn-default" ng-click="openUpload()">
+                            <i class="glyphicon glyphicon-upload text-success"></i> Upload
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4 text-right">
-                <div class="btn-group" uib-dropdown ng-disabled="!view.selectedJob">
-                    <button type="button" class="btn btn-success" ng-click="addTask()">Add tasks</button>
-                    <button type="button" class="btn btn-success" uib-dropdown-toggle>
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
-                        <li role="menuitem"><a href="" ng-click="copyTasks()">Copy Tasks (in progress)</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li role="menuitem"><a href="" ng-click="clearTasks()">Clear Tasks</a></li>
-                    </ul>
+                <div class="col-md-2 text-right">
+                    <div class="btn-group" uib-dropdown ng-disabled="!view.selectedJob">
+                        <button type="button" class="btn btn-default" ng-click="addTask()">
+                            <i class="glyphicon glyphicon-plus-sign text-primary"></i> Add tasks
+                        </button>
+                        <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+                            <li role="menuitem">
+                                <a href="" ng-click="copyTasks()">
+                                    <i class="glyphicon glyphicon-duplicate text-muted"></i> Copy Tasks (in progress)
+                                </a>
+                            </li>
+                            <li role="separator" class="divider"></li>
+                            <li role="menuitem">
+                                <a href="" ng-click="clearTasks()">
+                                    <i class="glyphicon glyphicon glyphicon-remove text-danger"></i> Clear Tasks
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -86,45 +120,82 @@
             <tr class="header-row">
                 <th></th>
                 <th class="text-center"><small>Off</small></th>
+                <th class="text-center"><small>Name</small></th>
                 <th class="text-center"><small>Selector</small></th>
                 <th class="text-center"><small>Type</small></th>
                 <th class="text-center"><small>Data</small></th>
                 <th class="text-center"><small>Wait(ms)</small></th>
-                <th class="text-center"><small>Memo</small></th>
                 <th class="text-center"><small></th>
             </tr>
-            <tr class="task-row" ng-repeat="t in view.selectedJob.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" ng-style="t.disabled ? {opacity: 0.6} : {}" data-task-id="{{t.id}}">
+            <tr class="task-row" ng-repeat="t in view.selectedJob.tasks track by t.id" ng-init="selectorEdit=false" ng-class="{'text-muted': t.disabled}" data-task-id="{{t.id}}">
                 <td>
-                    <small class="text-primary form-control-static">
-                        <i class="glyphicon glyphicon-sort change-order cell-icon"></i>
-                    </small>
+                    <i class="glyphicon glyphicon-sort text-primary change-order cell-icon"></i>
                     <label class="form-control-static">{{$index + 1}}</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="form-control" ng-model="t.disabled" ng-change="jobChanged(t);">
-                    </td>
-                    <td class="selector">
-                        <input type="text" class="form-control" ng-model="t.selector" ng-blur="jobChanged(t);">
-                    </td>
-                    <td>
-                        <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="jobChanged(t)"></select>
-                    </td>
-                    <td class="data">
-                        <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="jobChanged(t);">
-                    </td>
-                    <td class="wait">
-                        <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="jobChanged(t);">
-                    </td>
-                    <td class="memo">
-                        <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.memo" ng-blur="jobChanged(t);">
-                    </td>
-                    <td>
-                        <i class="form-control-static glyphicon glyphicon-remove text-danger remove-task cell-icon" ng-click="removeTask(t)"></i>
-                    </td>
+                </td>
+                <td>
+                    <input type="checkbox" class="form-control" ng-model="t.disabled" ng-change="jobChanged(t);">
+                </td>
+                <td class="name">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.name" ng-blur="jobChanged(t);" placeholder="Task name">
+                </td>
+                <td class="selector">
+                    <input type="text" class="form-control" ng-model="t.selector" ng-blur="jobChanged(t);" placeholder="Selector">
+                </td>
+                <td>
+                    <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="jobChanged(t)"></select>
+                </td>
+                <td class="data">
+                    <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.data" ng-blur="jobChanged(t);">
+                </td>
+                <td class="wait">
+                    <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="jobChanged(t);">
+                </td>
+                <td>
+                    <i class="form-control-static glyphicon glyphicon-remove text-danger remove-task cell-icon" ng-click="removeTask(t)"></i>
+                </td>
             </tr>
         </table>
     </div>
+    <div id="modalContainer"></div>
     <script src="js/options.js"></script>
+    <script type="text/ng-template" id="tmpl/upload.nghtml">
+        <div class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" ng-click="$hide()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title">Upload jobs</h4>
+                    </div>
+                    <div class="modal-body form-horizontal">
+                        <!-- TODO: upload type replace merge or somthing -->
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <button class="btn btn-default" ng-click="uploadJobs({naming: true})" ng-disabled="!view.upload.validJobs.length">
+                                        <i class="glyphicon glyphicon glyphicon-ok-sign text-primary"></i> Upload
+                                    </button>
+                                    <button class="btn btn-default" ng-click="uploadJobs({replace: true})" ng-disabled="!view.upload.validJobs.length">
+                                        <i class="glyphicon glyphicon glyphicon-refresh text-danger"></i> Replace
+                                    </button>
+                                </div>
+                                <label class="control-label">Valid jobs: {{view.upload.validJobs.length || 0}}</label>
+                                <label class="control-label text-danger" ng-show="view.upload.errorJobs.length">Error jobs: {{view.upload.errorJobs.length || 0}}</label>
+                                <label class="control-label text-info pull-right">
+                                    <i class="glyphicon glyphicon-info-sign"></i> Only support json files
+                                </label>
+                            </div>
+                        </div>
+                        <div id="drop_zone">Drop files here</div>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+    </script>
 </body>
 
 </html>

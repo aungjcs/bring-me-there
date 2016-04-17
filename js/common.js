@@ -31,6 +31,16 @@ var Common = {};
         };
     };
 
+    Common.newId = (function() {
+
+        var ts = ( new Date()).getTime();
+        return function() {
+
+            ts = ts + 1;
+            return ts;
+        };
+    })();
+
     Common.messageToTab = function( tabQuery, msg ) {
 
         return new Promise(function( resolve ) {

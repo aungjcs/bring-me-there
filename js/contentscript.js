@@ -99,45 +99,6 @@ function runTasks() {
     });
 }
 
-/*
-function runTasks() {
-
-    var wait, nextTask;
-
-    return chrome.runtime.sendMessageAsync({
-        type: 'next-task'
-    }).then(function( res ) {
-
-        var task = res.task;
-
-        if ( !task ) {
-
-            chrome.runtime.sendMessage({
-                type: 'ignore-connection-changed'
-            });
-            return null;
-        }
-
-        return waitConn().then(function( res ) {
-
-            // wait process
-            return new Promise(function( resolve ) {
-
-                setTimeout( resolve, ( isNaN( +task.wait ) ? 0 : +task.wait ) + NEXT_TASK_WAIT );
-            });
-        }).then(function() {
-
-            return execTask( task ).then( runTasks ).catch(function() {
-
-                return chrome.runtime.sendMessage({
-                    type: 'task-failed'
-                });
-            });
-        });
-    });
-}
-*/
-
 function execTask( task ) {
 
     var $ele = $( task.selector );

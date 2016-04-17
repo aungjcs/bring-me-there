@@ -1,0 +1,197 @@
+[
+  {
+    "jobId": 1460381698261,
+    "jobName": "aaaa",
+    "tasks": [
+      {
+        "id": 1460466133138,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "val",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460381700014,
+    "jobNam": "b",
+    "tasks": [
+      {
+        "disabled": false,
+        "id": 1460381713255,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460465899113,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460381701835,
+    "jobName": "c",
+    "tasks": [
+      {
+        "id": 1460382388121,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460382388338,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      },
+      {
+        "id": 1460382388529,
+        "memo": "new",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 0
+      }
+    ]
+  },
+  {
+    "jobId": 1460467260992,
+    "jobName": "hackbs",
+    "tasks": [
+      {
+        "data": "<a href=\"https://google.co.jp\">Google</a>",
+        "id": 1460467262997,
+        "memo": "new",
+        "selector": "#carbonads-container .carbonad",
+        "type": "html",
+        "wait": 1000
+      },
+      {
+        "data": "yo dude bs 4",
+        "id": 1460467332893,
+        "memo": "new",
+        "selector": ".v4-tease",
+        "type": "text",
+        "wait": 2000
+      },
+      {
+        "data": ".v4-tease",
+        "id": 1460470826839,
+        "memo": "new",
+        "selector": ".v4-tease",
+        "type": "text",
+        "wait": 5000
+      }
+    ]
+  },
+  {
+    "jobId": 1460789199836,
+    "jobName": "_",
+    "tasks": [
+      {
+        "id": 1460789209088,
+        "memo": "new",
+        "selector": "div#sidebar a[href=\"#collections\"]",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "disabled": false,
+        "id": 1460789209409,
+        "memo": "new",
+        "selector": "div#sidebar a[href=\"#arrays\"]",
+        "type": "click",
+        "wait": 3000
+      },
+      {
+        "id": 1460789242155,
+        "memo": "new",
+        "selector": "div#sidebar a[href=\"#functions\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460789272682,
+        "memo": "new",
+        "selector": "div#sidebar a:first",
+        "type": "click",
+        "wait": 1000
+      }
+    ]
+  },
+  {
+    "jobId": 1460789979334,
+    "jobName": "yahoo",
+    "tasks": [
+      {
+        "data": "",
+        "id": 1460789980272,
+        "memo": "auction",
+        "selector": "div#yahooservice>ul>li>a.cbysC2",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460789980634,
+        "memo": "to top",
+        "selector": "$('div.msthdlink>ul>li.ytop>a')[0].click()",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460789981362,
+        "memo": "TV",
+        "selector": "div#yahooservice>ul>li>a.cbysC25",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460789982301,
+        "memo": "to top",
+        "selector": "div#container .search button[ng-click*=addSomething]",
+        "type": "click",
+        "wait": 2000
+      }
+    ]
+  },
+  {
+    "jobId": 1460792290892,
+    "jobName": "bs refresh",
+    "tasks": [
+      {
+        "id": 1460792291733,
+        "memo": "new",
+        "selector": "nav a[href=\"../getting-started/\"]",
+        "type": "click",
+        "wait": 2000
+      },
+      {
+        "id": 1460792345438,
+        "memo": "",
+        "selector": "nav a[href=\"../css/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460792345807,
+        "memo": "new",
+        "selector": "nav a[href=\"../javascript/\"]",
+        "type": "click",
+        "wait": 1000
+      },
+      {
+        "id": 1460792346118,
+        "memo": "new",
+        "selector": "nav a[href=\"../customize/\"]",
+        "type": "click",
+        "wait": 1000
+      }
+    ]
+  }
+]

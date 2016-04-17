@@ -2,17 +2,21 @@
 function main() {
 
     var app = angular.module( 'extApp', [
+        'ngAnimate',
         'ui.bootstrap',
         'mgcrea.ngStrap'
     ]);
 
     app.controller( 'BodyCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
 
-        var $timeout = $injector.get( '$timeout' );
+        var $uploadModal;
         var $ = angular.element;
+        var $timeout = $injector.get( '$timeout' );
+        var $modal = $injector.get( '$modal' );
         var scope = $scope;
         var accept = {
-            job: ['jobId', 'jobName', 'tasks']
+            job: ['jobId', 'jobName', 'tasks'],
+            task: ['id', 'disabled', 'name', 'selector', 'type', 'data', 'wait']
         };
         var view = window.view = $scope.view = {
             scope: $scope,
@@ -23,7 +27,11 @@ function main() {
             types: ['click', 'html', 'text', 'val', 'url'],
             jobStatus: 'list',
             selectedJob: null,
-            inputJobName: ''
+            inputJobName: '',
+            upload: {
+                validJobs: [],
+                errorJobs: []
+            }
         };
 
         $scope.jobChanged = function() {
@@ -78,31 +86,13 @@ function main() {
         $scope.copyJob = function() {
 
             var newJob = window.newJob = angular.copy( view.selectedJob );
-            var newJobName;
-            var i = 1;
-            var nameDecided = false;
-            var newId = idFactory();
 
-            newJob.jobId = newId();
-
-            while ( !newJobName ) {
-
-                if ( !view.jobs.find(function( v ) {
-
-                    return v.jobName === newJob.jobName + '-' + i;
-                })) {
-
-                    newJobName = newJob.jobName + '-' + i;
-                }
-
-                i = i + 1;
-            }
-
-            newJob.jobName = newJobName;
+            newJob.jobId = Common.newId();
+            newJob.jobName = namingJob( newJob.jobName );
 
             newJob.tasks.forEach(function( v ) {
 
-                v.id = newId();
+                v.id = Common.newId();
             });
 
             view.jobs.push( newJob );
@@ -148,6 +138,16 @@ function main() {
             $scope.selectedJobChange();
         };
 
+        $scope.openUpload = function() {
+
+            $uploadModal = $modal({
+                scope: $scope,
+                container: '#modalContainer',
+                templateUrl: 'tmpl/upload.nghtml',
+                show: true
+            });
+        };
+
         $scope.downloadJobs = function() {
 
             var blob;
@@ -163,6 +163,44 @@ function main() {
             saveAs( blob, 'jobs.json' );
         };
 
+        $scope.uploadJobs = function( options ) {
+
+            var jobs = angular.copy( view.upload.validJobs );
+
+            options = options || {};
+
+            if ( options.replace && !window.confirm( 'All jobs will be replace with uploaded!' )) {
+
+                return;
+            }
+
+            if ( options.naming ) {
+
+                jobs.forEach(function( v ) {
+
+                    v.jobName = namingJob( v.jobName );
+                });
+            }
+
+            if ( options.replace ) {
+
+                view.jobs.length = 0;
+                view.jobs = view.jobs.concat( jobs );
+                view.selectedJob = view.jobs[0];
+            } else {
+
+                view.jobs = view.jobs.concat( jobs );
+            }
+
+            view.upload.validJobs.length = 0;
+            view.upload.errorJobs.length = 0;
+
+            $scope.jobChanged();
+            $scope.selectedJobChange();
+
+            $uploadModal.hide();
+        };
+
         $scope.deleteJob = function() {
 
             if ( !view.selectedJob ) {
@@ -175,7 +213,7 @@ function main() {
                 return;
             }
 
-            view.jobs = view.jobs.filter(function( v ) {
+            view.jobs = view.jobs.filter(( v ) => {
 
                 return v.jobId !== view.selectedJob.jobId;
             });
@@ -196,10 +234,10 @@ function main() {
 
             var newTask = {
                 id: new Date().getTime(),
-                selector: 'div#container .search button[ng-click*=addSomething]',
+                name: '',
+                selector: '',
                 type: 'click',
-                wait: 0,
-                memo: 'new'
+                wait: 0
             };
 
             view.selectedJob.tasks = view.selectedJob.tasks || [];
@@ -208,12 +246,15 @@ function main() {
 
             $scope.jobChanged();
 
-            $scope.$applyAsync( setSortable );
+            $timeout(() => {
+
+                setSortable();
+            }, 10 );
         };
 
         $scope.removeTask = function( task ) {
 
-            view.selectedJob.tasks = view.selectedJob.tasks.filter(function( v ) {
+            view.selectedJob.tasks = view.selectedJob.tasks.filter(( v ) => {
 
                 return task.id !== v.id;
             });
@@ -254,7 +295,7 @@ function main() {
             var $rows = ui.item.closest( 'tbody' ).find( '.task-row' );
             var sortted = [];
 
-            view.selectedJob.tasks.forEach(function( v ) {
+            view.selectedJob.tasks.forEach(( v ) => {
 
                 mapTasks[v.id] = v;
             });
@@ -321,14 +362,157 @@ function main() {
             });
         }
 
-        function idFactory() {
+        function namingJob( baseName ) {
 
-            var id = new Date().getTime();
-            return function() {
+            var newName, i = 1;
+            baseName = baseName.replace( /-[0-9]+$/, '' );
 
-                id = id + 1;
-                return id;
-            };
+            while ( !newName ) {
+
+                if ( !view.jobs.find(function( v ) {
+
+                        return v.jobName === baseName + '-' + i;
+                    })) {
+
+                    newName = baseName + '-' + i;
+                }
+
+                i = i + 1;
+            }
+
+            return newName;
+        }
+
+        $( document ).on( 'dragover', '#drop_zone', handleDragOver );
+        $( document ).on( 'drop', '#drop_zone', handleFileSelect );
+
+        function optimizeJobs( uploads ) {
+
+            var errors = [];
+            var jobs = [];
+
+            view.upload.validJobs.length = 0;
+            view.upload.errorJobs.length = 0;
+
+            uploads.forEach(function( u ) {
+
+                var job;
+
+                try {
+
+                    // parse data to jobs
+                    u.jobs = JSON.parse( u.data );
+
+                } catch ( ex ) {
+
+                    errors.push({
+                        file: u.file,
+                        error: ex
+                    });
+
+                    return;
+                }
+
+                u.jobs.forEach(function( j ) {
+
+                    // only accept valid property
+                    job = _.pick( j, accept.job );
+
+                    if ( !job.jobName ) {
+
+                        return;
+                    }
+
+                    job.jobId = Common.newId();
+
+                    jobs.push( job );
+                });
+            });
+
+            if ( !jobs.length ) {
+
+                return;
+            }
+
+            jobs.forEach(function( j ) {
+
+                var tasks = Array.isArray( j.tasks ) ? j.tasks : [];
+
+                // reset array for clean tasks
+                j.tasks = [];
+
+                tasks.forEach(function( t ) {
+
+                    t.id = Common.newId();
+
+                    // only accept valid property
+                    j.tasks.push( _.pick( t, accept.task ));
+                });
+            });
+
+            view.upload.validJobs = jobs;
+
+            $scope.$applyAsync();
+        }
+
+        function handleFileSelect( e ) {
+
+            var evt = e.originalEvent || e;
+
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            var files = evt.dataTransfer.files; // FileList object.
+            var uploads = [];
+
+            for ( var i = 0, f; f = files[i]; i++ ) {
+
+                if ( f.type !== 'application/json' ) {
+
+                    return;
+                }
+
+                uploads.push({
+                    file: f,
+                    data: null
+                });
+
+                var reader = new FileReader();
+
+                reader.onload = (function( file ) {
+
+                    return function( e ) {
+
+                        var fo = uploads.find( v => {
+
+                            return v.file.name === file.name;
+                        });
+
+                        fo.data = e.target.result;
+
+                        // if all files read let digest loop to handle it
+                        if ( !uploads.find( v => {
+
+                                return !v.data;
+                            })) {
+
+                            optimizeJobs( uploads );
+                        }
+                    };
+                })( f );
+
+                reader.readAsText( f );
+            }
+        }
+
+        function handleDragOver( e ) {
+
+            var evt = e.originalEvent || e;
+
+            evt.stopPropagation();
+            evt.preventDefault();
+
+            evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
         }
     }]);
 }
