@@ -190,13 +190,15 @@ function main() {
             } else {
 
                 view.jobs = view.jobs.concat( jobs );
+
+                view.selectedJob = view.selectedJob || view.jobs[0];
             }
 
             view.upload.validJobs.length = 0;
             view.upload.errorJobs.length = 0;
 
             $scope.jobChanged();
-            $scope.selectedJobChange();
+            view.selectedJob && $scope.selectedJobChange();
 
             $uploadModal.hide();
         };
@@ -249,7 +251,26 @@ function main() {
             $timeout(() => {
 
                 setSortable();
+                $( 'table#tasks-table tr:last td.name input' ).focus();
             }, 10 );
+        };
+
+        // function setFocus
+
+        $scope.copyThisTask = function( task ) {
+
+            var newTask = angular.copy( task );
+
+            newTask.id = Common.newId();
+
+            view.selectedJob.tasks.push( newTask );
+
+            $scope.jobChanged();
+
+            $timeout(() => {
+
+                $( 'table#tasks-table tr:last td.name input' ).focus();
+            });
         };
 
         $scope.removeTask = function( task ) {
@@ -364,17 +385,17 @@ function main() {
 
         function namingJob( baseName ) {
 
-            var newName, i = 1;
+            var newName, i = 0;
             baseName = baseName.replace( /-[0-9]+$/, '' );
 
             while ( !newName ) {
 
                 if ( !view.jobs.find(function( v ) {
 
-                        return v.jobName === baseName + '-' + i;
+                        return v.jobName === baseName + ( i > 1 ? '-' + i : '' );
                     })) {
 
-                    newName = baseName + '-' + i;
+                    newName = baseName + ( i > 1 ? '-' + i : '' );
                 }
 
                 i = i + 1;

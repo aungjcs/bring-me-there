@@ -150,12 +150,26 @@
                 <td class="wait">
                     <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="jobChanged(t);">
                 </td>
-                <td>
-                    <i class="form-control-static glyphicon glyphicon-remove text-danger remove-task cell-icon" ng-click="removeTask(t)"></i>
+                <td class="function">
+                    <i class="form-control-static glyphicon glyphicon-menu-hamburger text-primary cell-icon" data-placement="bottom-right" data-container="#dropdownContainer" bs-dropdown></i>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="" ng-click="copyThisTask(t)">
+                                <i class="form-control-static glyphicon glyphicon-duplicate text-primary"></i> Make a copy
+                            </a>
+                        </li>
+                        <li role="separator" class="divider"></li>
+                        <li>
+                            <a href="" ng-click="removeTask(t)">
+                                <i class="form-control-static glyphicon glyphicon-remove text-danger"></i> Remove task
+                            </a>
+                        </li>
+                    </ul>
                 </td>
             </tr>
         </table>
     </div>
+    <div id="dropdownContainer"></div>
     <div id="modalContainer"></div>
     <script src="js/options.js"></script>
     <script type="text/ng-template" id="tmpl/upload.nghtml">
