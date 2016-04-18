@@ -431,6 +431,9 @@ function main() {
                         error: ex
                     });
 
+                    window.alert( 'Unknow file format. We only support JSON format!' );
+                    console.log( 'Upload error:', ex );
+
                     return;
                 }
 
@@ -488,10 +491,10 @@ function main() {
 
             for ( var i = 0, f; f = files[i]; i++ ) {
 
-                if ( f.type !== 'application/json' ) {
+                // if ( f.type !== 'application/json' ) {
 
-                    return;
-                }
+                //     return;
+                // }
 
                 uploads.push({
                     file: f,
