@@ -132,7 +132,9 @@ function execTask( task ) {
 
     if ( task.type === 'click' ) {
 
-        ele.dispatchEvent( new MouseEvent( 'click' ));
+        ele.dispatchEvent( new MouseEvent( 'click', {
+            bubbles: true
+        } ));
 
     } else if ( task.type === 'val' ) {
 
