@@ -294,6 +294,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }
 
         delete listeningTabs[tabId];
+        delete tabsObj[tabId];
 
         connections = connections.filter(function( v ) {
 
