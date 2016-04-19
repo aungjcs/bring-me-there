@@ -11,9 +11,8 @@ function main() {
 
     if ( !activeHost ) {
 
-        $( '#main' ).hide();
+        $( '#run' ).hide();
         $( '#notwork' ).show();
-        return;
     }
 
     $( '#project' ).click(function( evt ) {
