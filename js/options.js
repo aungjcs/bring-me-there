@@ -24,7 +24,7 @@ function main() {
             jobs: [],
             jobsMapped: {},
             tasks: [],
-            types: ['click', 'html', 'text', 'val', 'url'],
+            types: ['click', 'dblclick', 'html', 'text', 'val', 'url'],
             jobStatus: 'list',
             selectedJob: null,
             inputJobName: '',

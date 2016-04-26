@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Bring me there",
   "description": "Automation for chrome.",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "permissions": [
     "tabs",
     "storage",

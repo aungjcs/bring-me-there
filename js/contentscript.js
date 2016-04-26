@@ -130,9 +130,9 @@ function execTask( task ) {
         return Promise.reject( new Error( 'Element not found' ));
     }
 
-    if ( task.type === 'click' ) {
+    if ( task.type === 'click' || task.type === 'dblclick' ) {
 
-        ele.dispatchEvent( new MouseEvent( 'click', {
+        ele.dispatchEvent( new MouseEvent( task.type, {
             bubbles: true
         } ));
 
