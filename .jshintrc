@@ -31,6 +31,7 @@
         "angular": true,
         "Promise": true,
         "Common": true,
+        "Mousetrap": true,
         "_": true
     },
     "latedef": false,

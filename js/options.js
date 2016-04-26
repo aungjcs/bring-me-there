@@ -7,6 +7,11 @@ function main() {
         'mgcrea.ngStrap'
     ]);
 
+    Mousetrap.bind(['option+z'], function( e ) {
+
+        console.log( 'options+z' );
+    });
+
     app.controller( 'BodyCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
 
         var $uploadModal;
@@ -20,6 +25,7 @@ function main() {
         };
         var view = window.view = $scope.view = {
             scope: $scope,
+            status: 'jobs',
             clearHashHost: [],
             jobs: [],
             jobsMapped: {},
@@ -31,8 +37,11 @@ function main() {
             upload: {
                 validJobs: [],
                 errorJobs: []
-            }
+            },
+            shortcutDomains: []
         };
+
+        view.status = 'settings';
 
         $scope.jobChanged = function() {
 
@@ -335,13 +344,33 @@ function main() {
             $scope.$applyAsync();
         }
 
-        chrome.storage.local.getAsync(['setting', 'jobs', 'tasks', 'selectedJobId']).then(function( storage ) {
+        $scope.addShortcutDomain = function() {
+
+            view.shortcutDomains.push( view.newShortcutDomain );
+
+            storeSetting({
+                shortcutDomains: view.shortcutDomains
+            });
+
+            view.newShortcutDomain = '';
+        };
+
+        $scope.removeShortcutDomain = function( index ) {
+
+            view.shortcutDomains.splice( index, 1 );
+            storeSetting({
+                shortcutDomains: view.shortcutDomains
+            });
+        };
+
+        chrome.storage.local.getAsync(['setting', 'jobs', 'tasks', 'selectedJobId', 'shortcutDomains']).then(function( storage ) {
 
             var setting = storage.setting || {};
 
             view.clearHashHost = setting.clearHashHost || [];
             view.jobs = storage.jobs || [];
             view.tasks = storage.tasks || [];
+            view.shortcutDomains = storage.shortcutDomains || [];
 
             if ( storage.selectedJobId ) {
 

@@ -16,14 +16,6 @@
     "48": "img/bmt-48.png",
     "128": "img/bmt-128.png"
   },
-  "commands": {
-    "run-default-tasks": {
-      "suggested_key": {
-        "default": "Alt+Z"
-      },
-      "description": "Run default tasks."
-    }
-  },
   "background": {
     "page": "bg.html"
   },

@@ -358,12 +358,12 @@ chrome.tabs.onRemoved.addListener(function( tabId, removeInfo ) {
     console.log( 'tabId', arguments, popup[tabId] );
 });
 
-chrome.commands.onCommand.addListener(function( command ) {
+// chrome.commands.onCommand.addListener(function( command ) {
 
-    if ( command === 'run-default-tasks' ) {
+//     if ( command === 'run-default-tasks' ) {
 
-        Common.messageToTab({ active: true }, { type: 'run-task' });
-    }
-});
+//         Common.messageToTab({ active: true }, { type: 'run-task' });
+//     }
+// });
 
 console.log( 'i am bg' );

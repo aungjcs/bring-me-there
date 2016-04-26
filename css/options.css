@@ -4,6 +4,10 @@ body > nav > .container
     width: 1180px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 #tasks-table tbody tr td input[type=checkbox]
 {
     -webkit-box-shadow: none;
