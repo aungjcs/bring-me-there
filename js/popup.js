@@ -163,7 +163,7 @@ function initView() {
 }
 
 // cache active tab and bg
-chrome.tabs.queryAsync({ active: true }).then(function( tabs ) {
+chrome.tabs.queryAsync({ active: true, currentWindow: true }).then(function( tabs ) {
 
     if ( !tabs.length ) {
 
