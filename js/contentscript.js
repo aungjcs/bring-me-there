@@ -115,14 +115,17 @@ function runNextTask() {
 
 function execTask( task ) {
 
-    var $ele = $( task.selector );
-    var ele = $ele[0];
+    var $ele;
+    var ele;
 
     if ( task.type === 'url' ) {
 
         window.location.href = task.data;
         return end();
     }
+
+    $ele = $( task.selector );
+    ele = $ele[0];
 
     if ( !ele ) {
 
@@ -133,8 +136,10 @@ function execTask( task ) {
     if ( task.type === 'click' || task.type === 'dblclick' ) {
 
         ele.dispatchEvent( new MouseEvent( task.type, {
-            bubbles: true
-        } ));
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
 
     } else if ( task.type === 'val' ) {
 
