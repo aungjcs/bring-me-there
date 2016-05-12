@@ -4,9 +4,44 @@ body > nav > .container
     width: 1180px;
 }
 
-.clickable {
+.clickable
+{
     cursor: pointer;
 }
+
+.list-group a.list-group-item
+{
+    text-decoration: none;
+
+    color: #4078c0;
+}
+
+.list-group a.list-group-item:focus
+{
+    background-color: #fff;
+}
+
+.list-group a.selected.list-group-item
+{
+    font-weight: bold;
+
+    color: #000;
+}
+
+.list-group a.selected.list-group-item::before
+{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 2px;
+
+    content: '';
+
+    background-color: #d26911;
+}
+
 
 #tasks-table tbody tr td input[type=checkbox]
 {
@@ -21,8 +56,8 @@ body > nav > .container
 
 #tasks-table tbody tr.text-muted td
 {
-    background-color: #eee;
     opacity: .6;
+    background-color: #eee;
 }
 
 #tasks-table tbody td .cell-icon

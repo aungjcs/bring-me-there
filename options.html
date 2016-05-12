@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/lib/normalize.css" rel="stylesheet">
     <link href="css/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/lib/octicons/octicons.css" rel="stylesheet">
     <link href="css/options.css" rel="stylesheet">
     <script src="js/lib/bluebird.js"></script>
     <script src="js/lib/underscore-1.7.0.min.js"></script>
@@ -32,25 +33,31 @@
             </div>
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a class="clickable" ng-click="view.status='jobs'">
-                        <i class="text-primary glyphicon glyphicon-list"></i> Jobs
+                    <a class="clickable" ng-click="view.tmplSrc='jobs.nghtml'">
+                        <i class="text-primary octicon octicon-list-ordered"></i> Jobs
                     </a>
                 </li>
                 <li>
-                    <a class="clickable" ng-click="view.status='settings'">
+                    <a class="clickable" ng-click="view.tmplSrc='settings.nghtml'">
                         <i class="text-primary glyphicon glyphicon-cog"></i> Settings
                     </a>
                 </li>
                 <li>
                     <a href="https://github.com/sinpaout/bring-me-there" target="_blank">
-                        <i class="text-primary glyphicon glyphicon-info-sign"></i> About project
+                        <i class="text-primary octicon octicon-mark-github"></i> About project
                     </a>
                 </li>
             </ul>
         </div>
     </nav>
     <div class="container">
-        <div id="jobs" ng-if="view.status==='jobs'">
+        <ng-include src="view.tmplSrc"></ng-include>
+    </div>
+    <div id="dropdownContainer"></div>
+    <div id="modalContainer"></div>
+    <script src="js/options.js"></script>
+    <script type="text/ng-template" id="jobs.nghtml">
+        <div id="jobs">
             <div class="form-horizontal">
                 <div class="form-group">
                     <label class="col-md-1 control-label">Job:</label>
@@ -156,7 +163,7 @@
                         <input type="text" class="form-control" ng-disabled="t.disabled" ng-model="t.name" ng-blur="jobChanged(t);" placeholder="Task name">
                     </td>
                     <td class="selector">
-                        <input type="text" class="form-control" ng-model="t.selector" ng-blur="jobChanged(t);" placeholder="Selector">
+                        <input type="text" class="form-control" ng-model="t.selector" ng-blur="jobChanged(t);" placeholder="Selector" ng-disabled="t.type === 'url'">
                     </td>
                     <td>
                         <select class="form-control" ng-disabled="t.disabled" ng-options="type for type in view.types" ng-model="t.type" ng-change="jobChanged(t)"></select>
@@ -168,7 +175,9 @@
                         <input type="number" class="form-control" ng-disabled="t.disabled" ng-model="t.wait" ng-blur="jobChanged(t);">
                     </td>
                     <td class="function">
-                        <i class="form-control-static glyphicon glyphicon-menu-hamburger text-primary cell-icon" data-placement="bottom-right" data-container="#dropdownContainer" bs-dropdown></i>
+                        <span data-placement="bottom-right" data-container="self" data-trigger="hover" data-delay="200" bs-dropdown>
+                            <i class="form-control-static glyphicon glyphicon-menu-hamburger text-primary cell-icon"></i>
+                        </span>
                         <ul class="dropdown-menu" role="menu">
                             <li>
                                 <a href="" ng-click="copyThisTask(t)">
@@ -186,33 +195,45 @@
                 </tr>
             </table>
         </div>
-        <div id="jobs" ng-if="view.status==='settings'">
-            <div class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-md-3 control-label text-right">Add new domain:</label>
-                    <div class="col-md-3">
-                        <input class="form-control" ng-model="view.newShortcutDomain"></input>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-default" ng-disabled="!view.newShortcutDomain" ng-click="addShortcutDomain()">
-                            <i class="glyphicon glyphicon-plus-sign"></i> Add
-                        </button>
+    </script>
+    <script type="text/ng-template" id="settings.nghtml">
+        <div id="settings" ng-controller="SettingsCtrl">
+            <div class="row">
+                <div class="col-md-3 col-md-offset-1">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Shortcut available domain</a>
+                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Shortcut</a>
+                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Others</a>
                     </div>
                 </div>
-                <div class="form-group">
-                    <ul class="list-group col-md-6 col-md-offset-3">
-                        <li class="list-group-item active">
-                            <h4>Shortcuts available domains</h4>
-                        </li>
-                        <li class="list-group-item" ng-repeat="d in view.shortcutDomains track by $index">{{d}} <i class="glyphicon glyphicon-remove text-danger pull-right clickable" ng-click="removeShortcutDomain($index)"></i></li>
-                    </ul>
+                <div class="col-md-7">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-3 control-label">New domain:</label>
+                            <div class="col-md-7">
+                                <input class="form-control" ng-model="view.newShortcutDomain"></input>
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-default" ng-disabled="!view.newShortcutDomain" ng-click="addShortcutDomain()">
+                                    <i class="glyphicon glyphicon-plus-sign text-primary"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <ul class="list-group">
+                                    <li class="list-group-item active">
+                                        <label>Shortcuts available domains</label>
+                                    </li>
+                                    <li class="list-group-item" ng-repeat="d in view.shortcutDomains track by $index">{{d}} <i class="glyphicon glyphicon-remove text-danger pull-right clickable" ng-click="removeShortcutDomain($index)"></i></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="dropdownContainer"></div>
-    <div id="modalContainer"></div>
-    <script src="js/options.js"></script>
+    </script>
     <script type="text/ng-template" id="tmpl/upload.nghtml">
         <div class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg">

@@ -1,6 +1,11 @@
 /* global saveAs */
 function main() {
 
+    var accept = {
+        job: ['jobId', 'jobName', 'tasks'],
+        task: ['id', 'disabled', 'name', 'selector', 'type', 'data', 'wait']
+    };
+
     var app = angular.module( 'extApp', [
         'ngAnimate',
         'ui.bootstrap',
@@ -9,8 +14,34 @@ function main() {
 
     Mousetrap.bind(['option+z'], function( e ) {
 
-        console.log( 'options+z' );
+        console.log( 'options+z', arguments );
     });
+
+    app.factory( 'Storage', ['$injector', function( $injector ) {
+
+        var Storage = {};
+
+        Storage.storeSetting = function( setting ) {
+
+            var storage = angular.copy( setting );
+
+            if ( _.isArray( storage.jobs )) {
+
+                storage.jobs = storage.jobs.map(function( v ) {
+
+                    // delete unaccept property
+                    return _.pick( v, accept.job );
+                });
+            }
+
+            return chrome.storage.local.setAsync( storage ).then(function() {
+
+                console.log( 'saved' );
+            });
+        };
+
+        return Storage;
+    }]);
 
     app.controller( 'BodyCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
 
@@ -18,12 +49,10 @@ function main() {
         var $ = angular.element;
         var $timeout = $injector.get( '$timeout' );
         var $modal = $injector.get( '$modal' );
+        var Storage = $injector.get( 'Storage' );
         var scope = $scope;
-        var accept = {
-            job: ['jobId', 'jobName', 'tasks'],
-            task: ['id', 'disabled', 'name', 'selector', 'type', 'data', 'wait']
-        };
         var view = window.view = $scope.view = {
+            tmplSrc: 'settings.nghtml',
             scope: $scope,
             status: 'jobs',
             clearHashHost: [],
@@ -37,22 +66,21 @@ function main() {
             upload: {
                 validJobs: [],
                 errorJobs: []
-            },
-            shortcutDomains: []
+            }
         };
 
         view.status = 'settings';
 
         $scope.jobChanged = function() {
 
-            storeSetting({
+            Storage.storeSetting({
                 jobs: view.jobs
             });
         };
 
         $scope.selectedJobChange = function() {
 
-            storeSetting({
+            Storage.storeSetting({
                 selectedJobId: view.selectedJob.jobId
             });
         };
@@ -268,17 +296,18 @@ function main() {
 
         $scope.copyThisTask = function( task ) {
 
+            var index = view.selectedJob.tasks.indexOf( task );
             var newTask = angular.copy( task );
 
             newTask.id = Common.newId();
 
-            view.selectedJob.tasks.push( newTask );
+            view.selectedJob.tasks.splice( index, 0, newTask );
 
             $scope.jobChanged();
 
             $timeout(() => {
 
-                $( 'table#tasks-table tr:last td.name input' ).focus();
+                $( 'table#tasks-table tr' ).eq( index + 2 ).find( 'td.name input' ).focus();
             });
         };
 
@@ -310,13 +339,18 @@ function main() {
 
         function setSortable() {
 
-            $( '#tasks-table ' ).sortable({
+            $( '#tasks-table' ).sortable({
                 items: 'tr.task-row',
                 handle: '.change-order',
                 revert: true,
                 placeholder: 'bg-warning sortable-placeholder',
                 update: sorttableUpdated
             });
+        }
+
+        function destroySortable() {
+
+            $( '#tasks-table' ).sortable( 'destroy' );
         }
 
         function sorttableUpdated( event, ui ) {
@@ -343,25 +377,6 @@ function main() {
             $scope.jobChanged();
             $scope.$applyAsync();
         }
-
-        $scope.addShortcutDomain = function() {
-
-            view.shortcutDomains.push( view.newShortcutDomain );
-
-            storeSetting({
-                shortcutDomains: view.shortcutDomains
-            });
-
-            view.newShortcutDomain = '';
-        };
-
-        $scope.removeShortcutDomain = function( index ) {
-
-            view.shortcutDomains.splice( index, 1 );
-            storeSetting({
-                shortcutDomains: view.shortcutDomains
-            });
-        };
 
         chrome.storage.local.getAsync(['setting', 'jobs', 'tasks', 'selectedJobId', 'shortcutDomains']).then(function( storage ) {
 
@@ -390,27 +405,26 @@ function main() {
 
                 setSortable();
             });
-
         });
 
-        function storeSetting( setting ) {
+        $scope.$watch( 'view.status', function( newValue, oldValue, scope ) {
 
-            var storage = angular.copy( setting );
+            console.log( 'key', newValue, oldValue );
 
-            if ( _.isArray( storage.jobs )) {
+            if ( newValue === 'jobs' ) {
 
-                storage.jobs = storage.jobs.map(function( v ) {
+                $scope.$applyAsync(function() {
 
-                    // delete unaccept property
-                    return _.pick( v, accept.job );
+                    setSortable();
                 });
             }
 
-            return chrome.storage.local.setAsync( storage ).then(function() {
+            if ( newValue !== 'jobs' ) {
 
-                console.log( 'saved' );
-            });
-        }
+                destroySortable();
+            }
+
+        }, false );
 
         function namingJob( baseName ) {
 
@@ -567,6 +581,50 @@ function main() {
 
             evt.dataTransfer.dropEffect = 'copy';
         }
+    }]);
+
+    app.controller( 'SettingsCtrl', ['$scope', '$injector', '$element', function( $scope, $injector, $element ) {
+
+        var Storage = $injector.get( 'Storage' );
+        var view = $scope.view = {
+            newShortcutDomain: '',
+            shortcutDomains: []
+        };
+
+        $scope.addShortcutDomain = function() {
+
+            view.shortcutDomains.push( view.newShortcutDomain );
+
+            Storage.storeSetting({
+                shortcutDomains: view.shortcutDomains
+            });
+
+            view.newShortcutDomain = '';
+        };
+
+        $scope.removeShortcutDomain = function( index ) {
+
+            view.shortcutDomains.splice( index, 1 );
+            Storage.storeSetting({
+                shortcutDomains: view.shortcutDomains
+            });
+        };
+
+        $scope.selectMenu = function( $event ) {
+
+            var target = angular.element( $event.target );
+
+            target.closest( '.list-group' ).find( '.list-group-item' ).removeClass( 'selected' );
+            target.addClass( 'selected' );
+        };
+
+        chrome.storage.local.getAsync(['shortcutDomains']).then(function( storage ) {
+
+            var setting = storage.setting || {};
+
+            view.shortcutDomains = storage.shortcutDomains || [];
+        });
+
     }]);
 }
 
