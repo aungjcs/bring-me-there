@@ -163,6 +163,12 @@ body > nav > .container
     border-radius: 5px;
 }
 
+/* shortcuts
+***********************************************/
+#settings #shortcuts ul.list-group .shortcutJob{
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
 
 /* angular-strap
 ***********************************************/

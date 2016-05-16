@@ -32,12 +32,12 @@
                 <p class="navbar-text"><b>Bring me there</b></p>
             </div>
             <ul class="nav navbar-nav navbar-right">
-                <li>
+                <li ng-class="{active: view.tmplSrc === 'jobs.nghtml'}">
                     <a class="clickable" ng-click="view.tmplSrc='jobs.nghtml'">
                         <i class="text-primary octicon octicon-list-ordered"></i> Jobs
                     </a>
                 </li>
-                <li>
+                <li ng-class="{active: view.tmplSrc === 'settings.nghtml'}">
                     <a class="clickable" ng-click="view.tmplSrc='settings.nghtml'">
                         <i class="text-primary glyphicon glyphicon-cog"></i> Settings
                     </a>
@@ -56,6 +56,7 @@
     <div id="dropdownContainer"></div>
     <div id="modalContainer"></div>
     <script src="js/options.js"></script>
+    <!-- jobs -->
     <script type="text/ng-template" id="jobs.nghtml">
         <div id="jobs">
             <div class="form-horizontal">
@@ -196,18 +197,21 @@
             </table>
         </div>
     </script>
+    <!-- settings -->
     <script type="text/ng-template" id="settings.nghtml">
         <div id="settings" ng-controller="SettingsCtrl">
             <div class="row">
                 <div class="col-md-3 col-md-offset-1">
                     <div class="list-group">
-                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Shortcut available domain</a>
-                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Shortcut</a>
-                        <a href="#" class="list-group-item" ng-click="selectMenu($event)">Others</a>
+                        <a href="#" class="list-group-item" ng-class="{selected: view.menuName==='shortcutDomains'}" ng-click="selectMenu($event, 'shortcutDomains')">Shortcut available domain</a>
+                        <a href="#" class="list-group-item" ng-class="{selected: view.menuName==='shortcuts'}" ng-click="selectMenu($event, 'shortcuts')">Shortcuts</a>
+                        <a href="#" class="list-group-item" ng-class="{selected: view.menuName==='shortcutJobs'}" ng-click="selectMenu($event, 'shortcutJobs')">Job's shortcuts</a>
+                        <!-- <a href="#" class="list-group-item" ng-click="selectMenu($event)">Others</a> -->
                     </div>
                 </div>
                 <div class="col-md-7">
-                    <div class="form-horizontal">
+                    <!-- shortcut domains -->
+                    <div class="form-horizontal" ng-if="view.menuName==='shortcutDomains'">
                         <div class="form-group">
                             <label class="col-md-3 control-label">New domain:</label>
                             <div class="col-md-7">
@@ -230,10 +234,55 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- shortcuts -->
+                    <div id="shortcuts" class="form-horizontal" ng-if="view.menuName==='shortcuts'">
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <ul class="list-group">
+                                    <li class="list-group-item active">
+                                        <label>Shortcuts</label>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <label class="shortcutJob col-md-7 form-control-static text-left">Run selected</label>
+                                            <div class="col-md-5">
+                                                <input type="text" class="form-control" ng-model="view.setting.runSelectedKey" ng-change="runSelectedKeyChanged()" ng-model-options="{ updateOn: 'blur' }">
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- shortcuts -->
+                    <div id="shortcuts" class="form-horizontal" ng-if="view.menuName==='shortcutJobs'">
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <ul class="list-group">
+                                    <li class="list-group-item active">
+                                        <label>Job's shortcuts (comming soon...)</label>
+                                    </li>
+                                    <!--
+                                    <li class="list-group-item" ng-repeat="j in view.jobs track by j.jobId">
+                                        <div class="row">
+                                            <label class="shortcutJob col-md-7 form-control-static text-left">{{j.jobName}}</label>
+                                            <div class="col-md-5">
+                                                <input type="text" class="shortcutCmd form-control">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </script>
+    <!-- upload -->
     <script type="text/ng-template" id="tmpl/upload.nghtml">
         <div class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg">

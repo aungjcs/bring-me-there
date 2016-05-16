@@ -12,16 +12,11 @@ function main() {
         'mgcrea.ngStrap'
     ]);
 
-    Mousetrap.bind(['option+z'], function( e ) {
-
-        console.log( 'options+z', arguments );
-    });
-
     app.factory( 'Storage', ['$injector', function( $injector ) {
 
         var Storage = {};
 
-        Storage.storeSetting = function( setting ) {
+        Storage.setData = function( setting ) {
 
             var storage = angular.copy( setting );
 
@@ -40,6 +35,13 @@ function main() {
             });
         };
 
+        Storage.getData = function( keys ) {
+
+            keys = angular.isArray( keys ) ? keys : [keys];
+
+            return chrome.storage.local.getAsync( keys );
+        };
+
         return Storage;
     }]);
 
@@ -52,7 +54,7 @@ function main() {
         var Storage = $injector.get( 'Storage' );
         var scope = $scope;
         var view = window.view = $scope.view = {
-            tmplSrc: 'settings.nghtml',
+            tmplSrc: 'jobs.nghtml',
             scope: $scope,
             status: 'jobs',
             clearHashHost: [],
@@ -73,14 +75,14 @@ function main() {
 
         $scope.jobChanged = function() {
 
-            Storage.storeSetting({
+            Storage.setData({
                 jobs: view.jobs
             });
         };
 
         $scope.selectedJobChange = function() {
 
-            Storage.storeSetting({
+            Storage.setData({
                 selectedJobId: view.selectedJob.jobId
             });
         };
@@ -587,15 +589,18 @@ function main() {
 
         var Storage = $injector.get( 'Storage' );
         var view = $scope.view = {
+            setting: {},
             newShortcutDomain: '',
-            shortcutDomains: []
+            jobs: [],
+            shortcutDomains: [],
+            menuName: 'shortcutDomains'
         };
 
         $scope.addShortcutDomain = function() {
 
             view.shortcutDomains.push( view.newShortcutDomain );
 
-            Storage.storeSetting({
+            Storage.setData({
                 shortcutDomains: view.shortcutDomains
             });
 
@@ -605,26 +610,31 @@ function main() {
         $scope.removeShortcutDomain = function( index ) {
 
             view.shortcutDomains.splice( index, 1 );
-            Storage.storeSetting({
+            Storage.setData({
                 shortcutDomains: view.shortcutDomains
             });
         };
 
-        $scope.selectMenu = function( $event ) {
+        $scope.selectMenu = function( $event, menuName ) {
 
-            var target = angular.element( $event.target );
-
-            target.closest( '.list-group' ).find( '.list-group-item' ).removeClass( 'selected' );
-            target.addClass( 'selected' );
+            view.menuName = menuName;
         };
 
-        chrome.storage.local.getAsync(['shortcutDomains']).then(function( storage ) {
+        $scope.runSelectedKeyChanged = function() {
 
-            var setting = storage.setting || {};
+            Storage.setData({
+                setting: view.setting
+            });
+        };
 
+        Storage.getData(['setting', 'jobs', 'shortcutDomains']).then(function( storage ) {
+
+            view.setting = storage.setting || {};
+            view.jobs = storage.jobs || [];
             view.shortcutDomains = storage.shortcutDomains || [];
-        });
 
+            view.setting.runSelectedKey = view.setting.runSelectedKey || '';
+        });
     }]);
 }
 

@@ -3,37 +3,69 @@
 var $ = jQuery;
 var NEXT_TASK_WAIT = 100;
 
-chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
+main();
 
-    var msgType = msg && msg.type;
+function main() {
 
-    if ( msgType === 'run-task' ) {
+    chrome.runtime.onMessage.addListener(function( msg, sender, sendResponse ) {
 
-        runTasks();
-    }
-});
+        var msgType = msg && msg.type;
 
-// if tasks still left run next
-chrome.runtime.sendMessageAsync({
-    type: 'load-tasks'
-}).then(function( res ) {
+        if ( msgType === 'run-task' ) {
 
-    if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
-
-        runNextTask();
-        return;
-    }
-
-    chrome.runtime.sendMessageAsync({
-        type: 'is-run-onload'
-    }).then(( res ) => {
-
-        // run on reload
-        res && runTasks();
+            runTasks();
+        }
     });
-});
 
-// function
+    // get short availabel domain
+    chrome.storage.local.getAsync(['shortcutDomains', 'setting']).then(function( s ) {
+
+        var setting = s.setting || {};
+        var shortcutDomains = s.shortcutDomains || [];
+        var isShortcutAvil = shortcutDomains.find(function( v ) {
+
+            return v === location.hostname;
+        }) || false;
+
+        if ( isShortcutAvil && setting.runSelectedKey ) {
+
+            Mousetrap.bind([setting.runSelectedKey], function( e ) {
+
+                runSelected();
+            });
+        }
+
+        checkNextRun();
+    });
+}
+
+function runSelected() {
+
+    runTasks();
+}
+
+function checkNextRun() {
+
+    // if tasks still left run next
+    chrome.runtime.sendMessageAsync({
+        type: 'load-tasks'
+    }).then(function( res ) {
+
+        if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
+
+            runNextTask();
+            return;
+        }
+
+        chrome.runtime.sendMessageAsync({
+            type: 'is-run-onload'
+        }).then(( res ) => {
+
+            // run on reload
+            res && runTasks();
+        });
+    });
+}
 
 function runTasks() {
 
