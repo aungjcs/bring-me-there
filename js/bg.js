@@ -123,56 +123,51 @@ function timeout( key ) {
         conn.state = 'timeout';
     }
 }
-/*
-chrome.storage.local.get( 'setting', function( storage ) {
-
-    // load clear hosts
-    clearHashHosts = storage.setting && storage.setting.clearHashHost || [];
-});
-
-chrome.storage.onChanged.addListener(function( changed ) {
-
-    if ( changed.setting ) {
-
-        clearHashHosts = changed.setting.newValue.clearHashHost;
-    }
-});
-*/
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     var tasks;
     var tabId = sender && sender.tab && sender.tab.id;
+    var type = request.type || '';
+    var data = request.data || {};
 
-    if ( request.type === 'save-running-tasks' ) {
-
-        if ( isNaN( +tabId )) {
-
-            throw 'save-object tab id not found. TabId was: ' + tabId;
-        }
-
-        if ( !request.data ) {
-
-            return;
-        }
+    if ( type === 'saveSession' ) {
 
         tabsObj[tabId] = tabsObj[tabId] || {};
-        tabsObj[tabId].tasks = request.data;
 
-        chrome.browserAction.setBadgeText({ text: 'Run' });
-        chrome.browserAction.setBadgeBackgroundColor({ color: '#265a88' });
+        Object.assign( tabsObj[tabId], request.data );
+
+        // we have to send back response cos process will start after response callback.
+        sendResponse();
+    }
+
+    if ( type === 'loadSession' ) {
+
+        sendResponse( tabsObj[tabId] );
+    }
+
+    if ( type === 'setBadge' ) {
+
+        chrome.browserAction.setBadgeText({ text: data.text });
+        chrome.browserAction.setBadgeBackgroundColor({ color: data.color });
 
         sendResponse();
     }
 
-    if ( request.type === 'is-run-onload' ) {
+    if ( type === 'inspectBg' ) {
+
+        // for debug
+        sendResponse({
+            connections: connections,
+            listeningTabs: listeningTabs,
+            tabsObj: tabsObj,
+            popup: popup
+        });
+    }
+
+    if ( request.type === 'isRunOnload' ) {
 
         var result;
-
-        if ( isNaN( +tabId )) {
-
-            throw 'is-run-onload tab id not found. TabId was: ' + tabId;
-        }
 
         result = popup.runOnLoads.find(( v ) => {
 
@@ -183,11 +178,6 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
     }
 
     if ( request.type === 'load-tasks' ) {
-
-        if ( isNaN( +tabId )) {
-
-            throw 'load-task tab id not found. TabId was: ' + tabId;
-        }
 
         tasks = ( tabsObj[tabId] || {}).tasks;
         sendResponse({
@@ -207,78 +197,19 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }
     }
 
-    if ( request.type === 'next-task' ) {
-
-        if ( isNaN( +tabId )) {
-
-            throw 'next-task tab id not found. TabId was: ' + tabId;
-        }
-
-        tasks = ( tabsObj[tabId] || {}).tasks;
-
-        if ( Array.isArray( tasks )) {
-
-            if ( !tasks.length ) {
-
-                chrome.browserAction.setBadgeText({ text: 'End' });
-                setTimeout(function() {
-
-                    chrome.browserAction.setBadgeText({ text: '' });
-                }, 1000 );
-
-                sendResponse( null );
-                return;
-            }
-
-            sendResponse({
-                task: tasks.shift()
-            });
-
-            chrome.browserAction.setBadgeText({ text: '' + tasks.length });
-
-        } else {
-
-            sendResponse( null );
-        }
-    }
-
-    if ( request.type === 'listen-connection-changed' ) {
-
-        if ( isNaN( +tabId )) {
-
-            throw 'listen-connection-changed tab id not found. TabId was: ' + tabId;
-        }
+    if ( request.type === 'listenConnectionChanged' ) {
 
         listeningTabs[tabId] = true;
-
-        // we have to send back response cos process will start after response callback.
         sendResponse();
     }
 
-    if ( request.type === 'ignore-connection-changed' ) {
+    if ( request.type === 'cleanUp' ) {
 
-        if ( isNaN( +tabId )) {
-
-            throw 'ignore-connection-changed tab id not found. TabId was: ' + tabId;
-        }
-
-        delete listeningTabs[tabId];
-
-        connections = connections.filter(function( v ) {
-
-            return v.tabId !== tabId;
-        });
-
-        // we have to send back response cos process will start after response callback.
+        cleanUp( tabId );
         sendResponse();
     }
 
-    if ( request.type === 'get-connection' ) {
-
-        if ( isNaN( +tabId )) {
-
-            throw 'get-connection tab id not found. TabId was: ' + tabId;
-        }
+    if ( request.type === 'getConnection' ) {
 
         sendResponse( connections.filter(function( v ) {
 
@@ -286,63 +217,24 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }));
     }
 
-    if ( request.type === 'task-failed' ) {
+    if ( request.type === 'taskFailed' ) {
 
-        if ( isNaN( +tabId )) {
-
-            throw 'task-failed tab id not found. TabId was: ' + tabId;
-        }
-
-        delete listeningTabs[tabId];
-        delete tabsObj[tabId];
-
-        connections = connections.filter(function( v ) {
-
-            return v.tabId !== tabId;
-        });
-
-        chrome.browserAction.setBadgeText({ text: 'Fail' });
-        chrome.browserAction.setBadgeBackgroundColor({ color: '#ff0000' });
-
-        setTimeout(function() {
-
-            chrome.browserAction.setBadgeText({ text: '' });
-        }, 2000 );
-
+        cleanUp( tabId );
         sendResponse();
     }
 });
 
-/*
-chrome.webRequest.onBeforeRequest.addListener(function( details ) {
+function cleanUp( tabId ) {
 
-    // console.log( 'onBeforeRequest', details );
+    // cleaning up tab's session
+    delete listeningTabs[tabId];
+    delete tabsObj[tabId];
 
-    var url = details.url;
-    var redirect;
+    connections = connections.filter(function( v ) {
 
-    if ( clearHashHosts.length && url.match( /#.*$/ig )) {
-
-        clearHashHosts.forEach(function( u ) {
-
-            if ( url.indexOf( u ) >= 0 ) {
-
-                if ( !redirect ) {
-
-                    redirect = {
-                        redirectUrl: url.match( /^[^#]+/ig )[0]
-                    };
-                }
-            }
-        });
-    }
-
-    return redirect || { cancel: false };
-}, {
-    urls: ['<all_urls>'],
-    types: ['main_frame']
-}, ['blocking']);
-*/
+        return v.tabId !== tabId;
+    });
+}
 
 chrome.tabs.onRemoved.addListener(function( tabId, removeInfo ) {
 

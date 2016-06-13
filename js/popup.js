@@ -51,17 +51,43 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        Common.messageToTab({ active: true, currentWindow: true }, { type: 'run-task' }).then(function() {
+        Common.messageToTab({ active: true, currentWindow: true }, { type: 'runTask' }).then(function() {
 
             window.close();
         });
     });
 
-    $( '#jobs' ).on( 'change', function() {
+    $( '#btnStopTasks' ).click(function() {
 
-        chrome.storage.local.set({
-            selectedJobId: +$( this ).val()
+        Common.messageToTab({ active: true, currentWindow: true }, { type: 'stopTask' }).then(function() {
+
+            window.close();
         });
+    });
+
+    $( '#loopTimes, #jobs' ).on( 'change', function() {
+
+        var $this = $( this );
+        var id = $this.attr( 'id' );
+        var storage = {};
+        var val = +$this.val();
+
+        if ( !$this.data( 'storage-prop-name' )) {
+
+            return;
+        }
+
+        if ( id === 'loopTimes' ) {
+
+            if ( val < 1 ) {
+
+                val = 1;
+                $this.val( 1 );
+            }
+        }
+
+        storage[$this.data( 'storage-prop-name' )] = val;
+        chrome.storage.local.set( storage );
     });
 
     if ( bg.popup.runOnLoads.find(function( v ) {
@@ -123,11 +149,12 @@ function updateHostClearHash( option ) {
 
 function initView() {
 
-    return chrome.storage.local.getAsync(['setting', 'jobs', 'selectedJobId']).then(function( storage ) {
+    return chrome.storage.local.getAsync(['setting', 'jobs', 'selectedJobId', 'loopTimes']).then(function( storage ) {
 
         var found;
         var setting = storage.setting || {};
         var hosts = $.isArray( setting.clearHashHost ) ? setting.clearHashHost : [setting.clearHashHost];
+        var loopTimes = typeof storage.loopTimes !== 'undefined' ? storage.loopTimes : 1;
 
         jobs = storage.jobs || [];
 
@@ -159,6 +186,8 @@ function initView() {
 
             $( '#jobs' ).val( storage.selectedJobId );
         }
+
+        $( '#loopTimes' ).val( loopTimes );
     });
 }
 

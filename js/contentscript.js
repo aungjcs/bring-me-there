@@ -2,7 +2,7 @@
 
 var $ = jQuery;
 var NEXT_TASK_WAIT = 100;
-
+var hasStopOrder = false;
 main();
 
 function main() {
@@ -11,17 +11,25 @@ function main() {
 
         var msgType = msg && msg.type;
 
-        if ( msgType === 'run-task' ) {
+        if ( msgType === 'runTask' ) {
 
-            runTasks();
+            // We have to clean up last run or waiting connection will not resolve until timeout.
+            chrome.runtime.sendMessageAsync({
+                type: 'cleanUp'
+            }).then( runTasks );
+        }
+
+        if ( msgType === 'stopTask' ) {
+
+            hasStopOrder = true;
         }
     });
 
-    // get short availabel domain
-    chrome.storage.local.getAsync(['shortcutDomains', 'setting']).then(function( s ) {
+    // get short available domain
+    chrome.storage.local.getAsync(['shortcutDomains', 'setting']).then(function( storage ) {
 
-        var setting = s.setting || {};
-        var shortcutDomains = s.shortcutDomains || [];
+        var setting = storage.setting || {};
+        var shortcutDomains = storage.shortcutDomains || [];
         var isShortcutAvil = shortcutDomains.find(function( v ) {
 
             return v === location.hostname;
@@ -31,17 +39,15 @@ function main() {
 
             Mousetrap.bind([setting.runSelectedKey], function( e ) {
 
-                runSelected();
+                // We have to clean up last run or waiting connection will not resolve until timeout.
+                chrome.runtime.sendMessageAsync({
+                    type: 'cleanUp'
+                }).then( runTasks );
             });
         }
 
         checkNextRun();
     });
-}
-
-function runSelected() {
-
-    runTasks();
 }
 
 function checkNextRun() {
@@ -58,7 +64,7 @@ function checkNextRun() {
         }
 
         chrome.runtime.sendMessageAsync({
-            type: 'is-run-onload'
+            type: 'isRunOnload'
         }).then(( res ) => {
 
             // run on reload
@@ -67,11 +73,14 @@ function checkNextRun() {
     });
 }
 
-function runTasks() {
+function runTasks( options ) {
 
-    chrome.storage.local.get(['tasks', 'jobs', 'selectedJobId'], function( storage ) {
+    var opt = options || {};
+    var selectedJob, runningTasks, loopTimes;
 
-        var selectedJob, runningTasks;
+    chrome.storage.local.getAsync(['tasks', 'jobs', 'selectedJobId', 'loopTimes']).then(function( storage ) {
+
+        loopTimes = typeof storage.loopTimes !== 'undefined' ? storage.loopTimes : 1;
 
         if ( !storage.jobs || !storage.jobs.length ) {
 
@@ -89,39 +98,120 @@ function runTasks() {
             return !v.disabled;
         });
 
+    }).then(function() {
+
+        if ( opt.isLoop ) {
+
+            return chrome.runtime.sendMessageAsync({
+                type: 'loadSession'
+            }).then(function( res ) {
+
+                loopTimes = res.loopTimes;
+                listenAndRun();
+            });
+        }
+
+        listenAndRun();
+    });
+
+    function listenAndRun() {
+
+        loopTimes = loopTimes - 1;
+
+        // set tasks as session
         chrome.runtime.sendMessageAsync({
-            type: 'save-running-tasks',
-            data: runningTasks
+            type: 'saveSession',
+            data: {
+                tasks: runningTasks,
+                loopTimes: loopTimes
+            }
+        }).then(function() {
+
+            return setBadge({
+                text: 'Run'
+            });
         }).then(function() {
 
             return chrome.runtime.sendMessageAsync({
-                type: 'listen-connection-changed'
+                type: 'listenConnectionChanged'
             });
         }).then( runNextTask );
-    });
+    }
 }
 
 function runNextTask() {
 
     var task;
+    var msg = 'End';
     var promise = waitConn().then(function() {
 
         return chrome.runtime.sendMessageAsync({
-            type: 'next-task'
+            type: 'loadSession'
         }).then(function( res ) {
 
-            if ( !res || !res.task ) {
+            if ( hasStopOrder ) {
+
+                hasStopOrder = false;
+                console.warn( 'Stopped by user' );
+
+                promise.cancel();
 
                 chrome.runtime.sendMessage({
-                    type: 'ignore-connection-changed'
+                    type: 'cleanUp'
                 });
-                promise.cancel();
-            } else {
 
-                task = res.task;
+                return setBadge({ text: 'Stop', color: '#ff0000' }).then(function() {
+
+                    setBadge({ text: '' }, 1000 );
+                });
             }
 
-            return null;
+            // no more tasks
+            if ( !Array.isArray( res.tasks ) || !res.tasks.length ) {
+
+                promise.cancel();
+
+                if ( res.loopTimes > 0 ) {
+
+                    // still have loop times
+                    msg = 'Loop';
+                    console.log( 'Loop remain:', res.loopTimes );
+                } else {
+
+                    chrome.runtime.sendMessage({
+                        type: 'cleanUp'
+                    });
+                }
+
+                return setBadge({ text: msg }).then(function() {
+
+                    // clear badge
+                    setBadge({ text: '' }, 1000 ).then(function() {
+
+                        if ( res.loopTimes > 0 ) {
+
+                            setTimeout(function() {
+
+                                runTasks({ isLoop: true });
+                            }, 10 );
+                        }
+                    });
+                });
+            }
+
+            task = res.tasks.shift();
+
+            return chrome.runtime.sendMessageAsync({
+                type: 'saveSession',
+                data: {
+                    tasks: res.tasks
+                }
+            }).then(function() {
+
+                return setBadge({
+                    text: res.tasks.length
+                });
+            });
         });
     }).then(function() {
 
@@ -135,12 +225,20 @@ function runNextTask() {
         return execTask( task );
     }).then(function() {
 
+        // not return promise
         runNextTask();
         return null;
     }).catch(function() {
 
-        return chrome.runtime.sendMessage({
-            type: 'task-failed'
+        return chrome.runtime.sendMessageAsync({
+            type: 'taskFailed'
+        }).then(function() {
+
+            return setBadge({ text: 'Fail', color: '#ff0000' }).then(function() {
+
+                // clear badge
+                setBadge({ text: '' }, 2000 );
+            });
         });
     });
 }
@@ -216,9 +314,9 @@ function waitConn() {
 
         setTimeout(function() {
 
-            chrome.runtime.sendMessage({
-                type: 'get-connection'
-            }, function( res ) {
+            chrome.runtime.sendMessageAsync({
+                type: 'getConnection'
+            }).then(function( res ) {
 
                 var counted = _.countBy( res, function( v ) {
 
@@ -236,4 +334,44 @@ function waitConn() {
             });
         }, 100 );
     }
+}
+
+function setBadge( data, delay ) {
+
+    var _data = {
+        color: '#265a88'
+    };
+
+    Object.assign( _data, data );
+
+    _data.text = typeof _data.text !== 'string' ? _data.text + '' : _data.text;
+
+    if ( delay ) {
+
+        return new Promise(function( resolve ) {
+
+            setTimeout(function() {
+
+                chrome.runtime.sendMessageAsync({
+                    type: 'setBadge',
+                    data: _data
+                }).then( resolve );
+            }, delay );
+        });
+    }
+
+    return chrome.runtime.sendMessageAsync({
+        type: 'setBadge',
+        data: _data
+    });
+}
+
+function inspectBg() {
+
+    return chrome.runtime.sendMessageAsync({
+        type: 'inspectBg'
+    }).then(function( res ) {
+
+        console.log( 'inspectBg', res );
+    });
 }
