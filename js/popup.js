@@ -51,7 +51,7 @@ function main() {
 
     $( '#btnRunTasks' ).click(function() {
 
-        Common.messageToTab({ active: true, currentWindow: true }, { type: 'runTask' }).then(function() {
+        Common.messageToActiveTab({ type: 'runTask' }).then(function() {
 
             window.close();
         });
@@ -59,7 +59,7 @@ function main() {
 
     $( '#btnStopTasks' ).click(function() {
 
-        Common.messageToTab({ active: true, currentWindow: true }, { type: 'stopTask' }).then(function() {
+        Common.messageToActiveTab({ type: 'stopTask' }).then(function() {
 
             window.close();
         });
@@ -92,8 +92,8 @@ function main() {
 
     if ( bg.popup.runOnLoads.find(function( v ) {
 
-        return v === activeTab.id;
-    })) {
+            return v === activeTab.id;
+        })) {
 
         $( '#cbxRunOnReload' ).prop( 'checked', true );
     }

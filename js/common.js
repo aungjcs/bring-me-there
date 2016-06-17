@@ -60,6 +60,15 @@ var Common = {};
         });
     };
 
+    Common.messageToActiveTab = function( msg ) {
+
+        var tabQuery = {};
+        tabQuery.active = true;
+        tabQuery.currentWindow = true;
+
+        return Common.messageToTab( tabQuery, msg );
+    };
+
     Common.openTab = function( url ) {
 
         chrome.tabs.queryAsync({
