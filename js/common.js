@@ -85,6 +85,11 @@ var Common = {};
         });
     };
 
+    Common.log = function( msg ) {
+
+        Common.messageToActiveTab( { type: 'log', data: msg } );
+    };
+
     function ChromeExtPromisifier( originalMethod ) {
 
         // return a function

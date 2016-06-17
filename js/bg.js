@@ -1,4 +1,4 @@
-/*global Common */
+/*global Common, Capture */
 /* jshint unused: true */
 
 var REQUEST_TIMEOUT = 60 * 1000;
@@ -221,6 +221,28 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
         cleanUp( tabId );
         sendResponse();
+    }
+
+    if ( request.type === 'screenshort' ) {
+
+        chrome.tabs.query( { active: true, currentWindow: true }, function( tabs ) {
+
+            if ( !tabs.length ) {
+
+                Common.log( 'Tab not found.' );
+                throw 'Tab not found.';
+            }
+
+            Capture.screenshort( tabs[0], request, sender, sendResponse );
+        });
+
+        return true;
+    }
+
+    if ( request.type === 'capture' ) {
+
+        Capture.capture( request, sender, sendResponse );
+        return true;
     }
 });
 

@@ -339,6 +339,15 @@ function main() {
             $scope.$applyAsync( setSortable );
         };
 
+        $scope.checkAll = function( checked ) {
+
+            view.selectedJob.tasks.forEach(function( v ) {
+
+                v.screenshort = checked;
+            });
+            $scope.jobChanged();
+        };
+
         function setSortable() {
 
             $( '#tasks-table' ).sortable({

@@ -65,6 +65,19 @@ function main() {
         });
     });
 
+    $( '#btnCapture' ).click(function() {
+
+        var data = {
+            type: 'screenshort'
+        };
+
+        // message to bg
+        chrome.runtime.sendMessage( data, function() {
+
+            window.close();
+        });
+    });
+
     $( '#loopTimes, #jobs' ).on( 'change', function() {
 
         var $this = $( this );

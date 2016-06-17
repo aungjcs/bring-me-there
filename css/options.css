@@ -42,6 +42,11 @@ body > nav > .container
     background-color: #d26911;
 }
 
+#tasks-table th,
+#tasks-table td
+{
+    white-space: nowrap;
+}
 
 #tasks-table tbody tr td input[type=checkbox]
 {
@@ -165,9 +170,11 @@ body > nav > .container
 
 /* shortcuts
 ***********************************************/
-#settings #shortcuts ul.list-group .shortcutJob{
-    text-overflow: ellipsis;
+#settings #shortcuts ul.list-group .shortcutJob
+{
     overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
 /* angular-strap
