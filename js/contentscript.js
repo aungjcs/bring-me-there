@@ -103,8 +103,6 @@ function runTasks( options ) {
         runningTasks = Array.isArray( selectedJob.tasks ) ? selectedJob.tasks : [];
         selectedJob.tasks = null;
 
-        console.log( 'storage', storage, selectedJob, runningTasks );
-
         // set index
         runningTasks.forEach(function( v, i ) {
 
