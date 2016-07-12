@@ -6,13 +6,25 @@ Simple automation for SPA testing.
 Just register jQuery selectors and run.  
 It will **automatically waits network connection** and webpage navigation.
 
-Here is running at ionic framework site.
+Here is a sample running at [todomvc](http://todomvc.com/examples/backbone/).
 
-![running](https://raw.githubusercontent.com/sinpaout/bring-me-there/docs/docs/img/running.gif)
+![running](https://raw.githubusercontent.com/sinpaout/bring-me-there/docs/docs/img/todos.gif)
 
 Not only single page but also able to run on normal navigation pages.(But not stable yet)
 
-##Installing
+## Support screenshot
+
+> screenshot idea forked from this [app](http://mrcoles.com/full-page-screen-capture-chrome-extension/)
+
+ - **check to screenshot**
+
+![set-screenshot](https://raw.githubusercontent.com/sinpaout/bring-me-there/docs/docs/img/set-screenshot.png)
+
+ - **screenshots will be download automatically**
+
+![screenshot](https://raw.githubusercontent.com/sinpaout/bring-me-there/docs/docs/img/todos-screenshot.gif)
+
+## Installing
 
 [Chrome apps store](https://chrome.google.com/webstore/detail/bring-me-there/njaajmkbdpimegdlkhgegbfpnblppccj)
 
@@ -45,7 +57,6 @@ Right click and copy selector.
 
 ## Roadmap
 
- - Support screen capture, [idea from this app](http://mrcoles.com/full-page-screen-capture-chrome-extension/)
  - Keep value and use on next task
  - More easier way to get selector
  - Run by shortcuts
