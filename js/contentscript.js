@@ -311,13 +311,30 @@ function execTask( task ) {
 
         $ele.val( task.data );
 
-        ele.dispatchEvent( new Event( 'change' ));
+        ele.dispatchEvent( new Event( 'change', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
     } else if ( task.type === 'text' ) {
 
         $ele.text( task.data );
     } else if ( task.type === 'html' ) {
 
         $ele.html( task.data );
+    } else if ( task.type === 'event' ) {
+
+        if ( !task.data ) {
+
+            console.error( 'No event type to dispatch.', task );
+            return Promise.reject( new Error( 'No event type to dispatch' ));
+        }
+
+        ele.dispatchEvent( new Event( task.data, {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
     }
 
     return end();

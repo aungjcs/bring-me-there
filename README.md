@@ -33,6 +33,9 @@ Not only single page but also able to run on normal navigation pages.(But not st
  - Prepare your tasks on setting
  - Go to the page which you want to run automation on
  - Then click the run button of extension
+ - Run by shortcut such `option+z` or `alt+z`. [More Info](https://craig.is/killing/mice)
+  - We do not handle shortcut for all domain.  
+    You have to register each domain in `Shortcuts available domains` first.
 
 ## Supported functions
 
@@ -44,7 +47,10 @@ Setting functions `text`, `val`, `html` will use jQuery's function for set value
  - dblclick
  - text
  - val
+  - `change` event will be dispatch automatically
  - html
+ - event
+  - set event type such `blur` and `focus` to data field 
 
 ## Get selector from browser
 
@@ -59,7 +65,6 @@ Right click and copy selector.
 
  - Keep value and use on next task
  - More easier way to get selector
- - Run by shortcuts
 
 
 
