@@ -1,7 +1,7 @@
 /*global Common, Capture */
 /* jshint unused: true */
 
-var REQUEST_TIMEOUT = 60 * 1000;
+var REQUEST_TIMEOUT = 30 * 1000;
 
 // var clearHashHosts = [];
 var handleRequestTypes = ['main_frame', 'sub_frame', 'xmlhttprequest'];
@@ -87,12 +87,13 @@ function updateJobs( options, details ) {
 
         connections.unshift({
             key: key,
-            id: id,
+            id: Common.newId(),
             tabId: details.tabId,
             state: options.state,
             type: options.type,
             details: details,
-            timer: timer
+            timer: timer,
+            ts: Date.now()
         });
     } else {
 
@@ -108,6 +109,9 @@ function updateJobs( options, details ) {
             conn.timer && clearTimeout( conn.timer );
         }
     }
+
+    // alert job changeds to such options page
+    chrome.runtime.sendMessage( null, { type: 'jobs_state_changed' });
 }
 
 function timeout( key ) {
@@ -122,6 +126,14 @@ function timeout( key ) {
         conn.timer = null;
         conn.state = 'timeout';
     }
+
+    // alert job changeds to such options page
+    chrome.runtime.sendMessage( null, { type: 'jobs_state_changed' });
+}
+
+function getConnections() {
+
+    return connections;
 }
 
 chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
@@ -130,6 +142,18 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
     var tabId = sender && sender.tab && sender.tab.id;
     var type = request.type || '';
     var data = request.data || {};
+
+    if ( type === 'document_start_loaded' ) {
+
+        chrome.management.getSelf(function( extInfo ) {
+
+            if ( extInfo.installType === 'development' ) {
+
+                Common.openTab( chrome.runtime.getURL( 'options.html' ), { slient: true });
+                Common.openTab( chrome.runtime.getURL( 'trace.html' ), { slient: true });
+            }
+        });
+    }
 
     if ( type === 'saveSession' ) {
 
@@ -225,7 +249,7 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
 
     if ( request.type === 'screenshort' ) {
 
-        chrome.tabs.query( { active: true, currentWindow: true }, function( tabs ) {
+        chrome.tabs.query({ active: true, currentWindow: true }, function( tabs ) {
 
             if ( !tabs.length ) {
 

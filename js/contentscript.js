@@ -6,9 +6,29 @@ var CAPTURE_DELAY = 150;
 var hasStopOrder = false;
 var activeTab;
 
-main();
+sr();
+
+$( main );
+
+// $(main);
+
+// document.addEventListener( 'DOMContentLoaded', function( event ) {
+
+//     main();
+// });
+//
+function sr() {
+
+    console.log( 'readyState', document.readyState );
+}
 
 function main() {
+
+    console.log( 'main' );
+
+    chrome.runtime.sendMessageAsync({
+        type: 'document_start_loaded'
+    });
 
     chrome.runtime.onMessage.addListener(function( data, sender, callback ) {
 
@@ -371,9 +391,11 @@ function waitConn() {
                 type: 'getConnection'
             }).then(function( res ) {
 
+                waitNavigation();
+
                 var counted = _.countBy( res, function( v ) {
 
-                    return v.state;
+                    return v.state && v.type !== 'navi';
                 });
 
                 if ( !counted.before || counted.before.length ) {
@@ -381,10 +403,73 @@ function waitConn() {
                     cb( counted );
                 } else {
 
+                    var imComplete = res.filter(function( v ) {
+
+                        return v.state !== 'complete';
+                    });
+
+                    sr();
+                    console.log( 'waitConn', counted, imComplete );
                     conn( cb );
                 }
 
             });
+        }, 100 );
+    }
+}
+
+function waitNavigation() {
+
+    var iframes = [];
+
+    return new Promise(function( resolve, reject ) {
+
+        conn(function() {
+
+            resolve();
+        });
+    });
+
+    function conn( cb ) {
+
+        setTimeout(function fetch() {
+
+            $( 'iframe' ).each(function( index, iframe ) {
+
+                var obj = {};
+                var found = iframes.find(function( v ) {
+
+                    return v.iframe === iframe;
+                });
+
+                if ( !found ) {
+
+                    obj.iframe = iframe;
+                    obj.load = false;
+
+                    iframes.push( obj );
+
+                    (function( _iframe, _obj ) {
+
+                        $( _iframe ).ready(function() {
+
+                            _obj.load = true;
+                        });
+                    })( iframe, obj );
+                }
+            });
+
+            if ( iframes.find(function( v ) {
+
+                return !v.load;
+            })) {
+
+                conn( cb );
+            } else {
+
+                cb();
+            }
+
         }, 100 );
     }
 }

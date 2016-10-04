@@ -69,7 +69,9 @@ var Common = {};
         return Common.messageToTab( tabQuery, msg );
     };
 
-    Common.openTab = function( url ) {
+    Common.openTab = function( url, options ) {
+
+        options = options || {};
 
         chrome.tabs.queryAsync({
             url: url
@@ -77,7 +79,10 @@ var Common = {};
 
             if ( tabs.length ) {
 
-                chrome.tabs.update( tabs[0].id, { active: true });
+                if ( !options.slient ) {
+
+                    chrome.tabs.update( tabs[0].id, { active: true });
+                }
                 return;
             }
 

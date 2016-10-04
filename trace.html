@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Bring me there options</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/lib/normalize.css" rel="stylesheet">
+    <link href="css/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/lib/octicons/octicons.css" rel="stylesheet">
+    <link href="css/options.css" rel="stylesheet">
+    <script src="js/lib/bluebird.js"></script>
+    <script src="js/lib/underscore-1.7.0.min.js"></script>
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/angular-animate.min.js"></script>
+    <script src="js/lib/ui-bootstrap-tpls.js"></script>
+    <script src="js/lib/angular-strap.min.js"></script>
+    <script src="js/lib/angular-strap.tpl.min.js"></script>
+    <script src="js/common.js"></script>
+</head>
+
+<body ng-controller="BodyCtrl">
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img alt="Brand" src="img/bmt-38.png" width=24 height=24>
+                </a>
+                <p class="navbar-text"><b>Bring me there</b></p>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li ng-class="{active: view.tmplSrc === 'jobs.nghtml'}">
+                    <a class="clickable" ng-click="view.tmplSrc='jobs.nghtml'">
+                        <i class="text-primary octicon octicon-list-ordered"></i> Jobs
+                    </a>
+                </li>
+                <li ng-class="{active: view.tmplSrc === 'settings.nghtml'}">
+                    <a class="clickable" ng-click="view.tmplSrc='settings.nghtml'">
+                        <i class="text-primary glyphicon glyphicon-cog"></i> Settings
+                    </a>
+                </li>
+                <li>
+                    <a href="https://github.com/sinpaout/bring-me-there" target="_blank">
+                        <i class="text-primary octicon octicon-mark-github"></i> About project
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div>
+        <div>
+            <ul style="float: left;width:50%;">
+                <li ng-repeat="c in view.connections | filter:{type:'wreq'} track by c.id">
+                    <a ng-href="" ng-click="log($event, c)" ng-style="{color: c.state==='complete' ? '#5fba7d': '#dd1144'}">{{c.id || 'no-id'}}-{{c.key}}</a>
+                </li>
+            </ul>
+            <ul style="float: left;width:50%;">
+                <li ng-repeat="c in view.connections | filter:{type:'navi'} track by c.id">
+                    <a ng-href="" ng-click="log($event, c)" ng-style="{color: c.state==='complete' ? '#5fba7d': '#dd1144'}">{{c.id || 'no-id'}}-{{c.key}}</a>
+                </li>
+            </ul>
+        </div>
+        <div></div>
+    </div>
+    <div id="dropdownContainer"></div>
+    <div id="modalContainer"></div>
+    <script src="js/trace.js"></script>
+</body>
+
+</html>

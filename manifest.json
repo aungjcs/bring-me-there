@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Bring me there",
   "description": "Automation for chrome.",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "permissions": [
     "activeTab",
     "tabs",
@@ -51,6 +51,7 @@
   ],
   "web_accessible_resources": [
     "img/*.png",
-    "js/*"
+    "js/*",
+    "trace.html"
   ]
 }
