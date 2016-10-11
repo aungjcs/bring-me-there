@@ -241,6 +241,18 @@ chrome.runtime.onMessage.addListener(function( request, sender, sendResponse ) {
         }));
     }
 
+    if ( request.type === 'clearMainFrameLoading' ) {
+
+        connections = connections.filter(function( v ) {
+
+            return v.tabId === tabId &&
+                !( v.type === 'navi' && v.state === 'before' && v.details.parentFrameId === -1 );
+        });
+        chrome.runtime.sendMessage( null, { type: 'jobs_state_changed' });
+        sendResponse( connections );
+        return true;
+    }
+
     if ( request.type === 'taskFailed' ) {
 
         cleanUp( tabId );

@@ -87,6 +87,14 @@ function checkNextRun() {
 
         if ( res && Array.isArray( res.tasks ) && res.tasks.length ) {
 
+            // clear main frame loading status of web navigation event
+            chrome.runtime.sendMessageAsync({
+                type: 'clearMainFrameLoading'
+            }).then(function( result ) {
+
+                console.log( 'clearMainFrameLoading', result );
+            });
+
             runNextTask();
             return;
         }
@@ -391,14 +399,21 @@ function waitConn() {
                 type: 'getConnection'
             }).then(function( res ) {
 
-                waitNavigation();
+                var isMainNavigated = false;
 
-                var counted = _.countBy( res, function( v ) {
+                // waitNavigation();
 
-                    return v.state && v.type !== 'navi';
+                var counted = _.countBy( res.filter( v => v.type === 'wreq' ), function( v ) {
+
+                    return v.state;
                 });
 
-                if ( !counted.before || counted.before.length ) {
+                isMainNavigated = res.find( v => {
+
+                    return v.type === 'navi' && v.state === 'before' && v.details.parentFrameId === -1;
+                });
+
+                if (( !counted.before || counted.before.length ) && !isMainNavigated ) {
 
                     cb( counted );
                 } else {
